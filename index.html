@@ -132,8 +132,8 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
 <div class="section">
   <div class="section-title">Leads / Transactions Index</div>
   <div class="chart-grid">
-    <div class="chart-box"><h3>Organic Leads (Rent Proxy) Index</h3><canvas id="rent-chart"></canvas></div>
-    <div class="chart-box"><h3>Paid Leads (Sale Proxy) Index</h3><canvas id="sale-chart"></canvas></div>
+    <div class="chart-box"><h3>Organic Leads Index (Rent)</h3><canvas id="rent-chart"></canvas></div>
+    <div class="chart-box"><h3>Paid Leads Index (Sale)</h3><canvas id="sale-chart"></canvas></div>
   </div>
 </div>
 <div class="section">
@@ -168,12 +168,12 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
   </div>
   <div class="chart-grid">
     <div class="chart-box"><h3 id="ai-share-title">Impression Share | Core Keywords</h3><canvas id="ai-share-chart"></canvas></div>
-    <div class="chart-box"><h3 id="ai-top-title">Abs. Top of Page Rate | Core Keywords</h3><canvas id="ai-top-chart"></canvas></div>
+    <div class="chart-box"><h3 id="ai-top-title">Absolute Top of Page Rate | Core Keywords</h3><canvas id="ai-top-chart"></canvas></div>
   </div>
 </div>
 <div class="section">
-  <div class="section-title">Reactivation Signal Trend (WoW % on 7-Day Rolling Avg)</div>
-  <div class="chart-grid"><div class="chart-box full-width"><h3>Sessions WoW % | Threshold: +10% for 2 consecutive days</h3><canvas id="signal-chart"></canvas></div></div>
+  <div class="section-title">Reactivation Signal Trend (Week-over-Week % on 7-Day Rolling Average)</div>
+  <div class="chart-grid"><div class="chart-box full-width"><h3>Sessions Week-over-Week % | Threshold: +10% for 2 consecutive days</h3><canvas id="signal-chart"></canvas></div></div>
 </div>
 <div class="section">
   <div class="section-title">Daily Detail</div>
@@ -237,22 +237,27 @@ function renderExec(){
   const last7Sigs=postSigs.slice(-7);
   const wowFirst=last7Sigs.length?last7Sigs[0].wow_sessions:0;
   const wowLast=last7Sigs.length?last7Sigs[last7Sigs.length-1].wow_sessions:0;
+  const latestRec=ALL[ALL.length-1];
+  function execSov(v){const ps=(latestRec['pf_'+v+'_share']||0)/100*(latestRec['pf_'+v+'_top']||0)/100;const bs=(latestRec['bayut_'+v+'_share']||0)/100*(latestRec['bayut_'+v+'_top']||0)/100;return(ps+bs)>0?ps/(ps+bs)*100:0;}
+  const sovBuy=execSov('core_buy'),sovRent=execSov('core_rent');
+  const latestIdx=post.length?post[post.length-1].total_sessions_idx:0;
+  const trending=avg(last3,'total_sessions_idx')>avg(first3,'total_sessions_idx');
 
   document.getElementById('exec-summary').innerHTML=`
-    <h2>TL;DR</h2>
-    <p>Since the conflict onset on <span class="hl">February 28</span>, UAE demand has shifted across all channels.
-    Total sessions index is averaging <span class="hl">${avg(post,'total_sessions_idx').toFixed(0)}</span> (baseline = 100),
-    a <span class="hl">${(100-avg(post,'total_sessions_idx')).toFixed(0)}% gap</span> vs the 4-week pre-conflict baseline.</p>
-    <p>App sessions saw the widest movement at <span class="hl">${avg(post,'app_sessions_idx').toFixed(0)}</span> on index,
-    followed by organic web at <span class="hl">${avg(post,'organic_sessions_idx').toFixed(0)}</span>.
-    Paid search sits at <span class="hl">${avg(post,'paid_sessions_idx').toFixed(0)}</span>, reflecting the adjusted budgets.</p>
-    <p>Total daily ad spend moved from <span class="hl">$${(totalPre/1000).toFixed(1)}K/day</span> pre-conflict to
+    <h2>Executive Summary</h2>
+    <p style="font-size:15px;font-weight:600;margin-bottom:12px;color:${trending?'#6ee7b7':'var(--pf-clay)'}">
+    ${trending?'Trending Up: Demand is recovering, competitive position is strong.':'Trending Down: Demand continues to move away from baseline.'}</p>
+    <p><strong>Demand:</strong> ${post.length} days since conflict onset (Feb 28). Sessions are at <span class="hl">${latestIdx.toFixed(0)}</span> on index today (baseline = 100),
+    up from <span class="hl">${avg(first3,'total_sessions_idx').toFixed(0)}</span> in the first 3 days post-conflict.
+    The week-over-week change has moved from <span class="hl">${wowFirst.toFixed(1)}%</span> to <span class="hl">${wowLast.toFixed(1)}%</span>, showing demand is closing the gap to pre-conflict levels.</p>
+    <p><strong>Spend:</strong> Total daily ad spend adjusted from <span class="hl">$${(totalPre/1000).toFixed(1)}K/day</span> to
     <span class="hl">$${(totalPost/1000).toFixed(1)}K/day</span> (<span class="hl">${spendChg.toFixed(0)}%</span>).
-    Meta retargeting saw the largest adjustment at <span class="hl">${((1-avg(post,'meta_retargeting_spend')/avg(pre,'meta_retargeting_spend'))*100).toFixed(0)}%</span>.
-    Google Search was adjusted by <span class="hl">${((1-avg(post,'paid_cost')/avg(pre,'paid_cost'))*100).toFixed(0)}%</span>.</p>
-    <p><span class="pos">Recovery momentum:</span> The WoW gap has narrowed from ${wowFirst.toFixed(1)}% to ${wowLast.toFixed(1)}% over the last 7 days, meaning sessions are stabilizing.
-    The index improved from ${avg(first3,'total_sessions_idx').toFixed(0)} (first 3 post-conflict days) to ${avg(last3,'total_sessions_idx').toFixed(0)} (last 3 days),
-    a <span class="pos">+${sessRec.toFixed(1)} point</span> gain. PF maintains a strong competitive position with search share of voice above 50% on both core rent and buy keywords.</p>`;
+    Budgets are held at current levels until reactivation signals are met.</p>
+    <p><strong>Competitive Position:</strong> PF is outperforming Bayut on top-of-page visibility.
+    Paid search share of voice is <span class="hl">${sovRent.toFixed(0)}%</span> on core rent and <span class="hl">${sovBuy.toFixed(0)}%</span> on core buy (above 50% = PF is winning).</p>
+    <p><strong>Reactivation Status:</strong> See the reactivation framework below for live signal tracking.
+    Once 2 of 3 signals are met for 2 consecutive days, a phased budget scale-up begins.</p>`;
+
 }
 
 function renderReactivation(){
@@ -278,22 +283,22 @@ function renderReactivation(){
       <div class="signal-card ${sessOK?'green':'red'}">
         <div class="sig-label">Signal 1: Sessions Recovery</div>
         <div class="sig-value">${latest.wow_sessions>=0?'+':''}${latest.wow_sessions.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: +10% WoW for 2 consecutive days</div>
+        <div class="sig-threshold">Threshold: +10% week-over-week for 2 consecutive days</div>
         <div class="sig-explain">Measures total user demand (web + app combined) on a 7-day rolling average vs the prior week. Tells us whether people are coming back to search for properties.</div>
         <div class="sig-status ${sessOK?'met':'not-met'}">${sessOK?'MET':'NOT MET'}</div>
       </div>
       <div class="signal-card ${leadsOK?'green':'red'}">
         <div class="sig-label">Signal 2: Leads Recovery</div>
         <div class="sig-value">Rent: ${latest.wow_org_leads>=0?'+':''}${latest.wow_org_leads.toFixed(1)}% | Sale: ${latest.wow_paid_leads>=0?'+':''}${latest.wow_paid_leads.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: +8% WoW for 2 consecutive days (rent or sale)</div>
+        <div class="sig-threshold">Threshold: +8% week-over-week for 2 consecutive days (rent or sale)</div>
         <div class="sig-explain">Measures downstream intent quality. If sessions recover but leads don't follow, scaling spend would buy traffic without conversions. Tracked separately for rent and sale to catch category-specific recovery.</div>
         <div class="sig-status ${leadsOK?'met':'not-met'}">${leadsOK?'MET':'NOT MET'}</div>
       </div>
       <div class="signal-card ${shareOK?'green':'red'}">
-        <div class="sig-label">Signal 3: Search Share of Voice vs Bayut</div>
+        <div class="sig-label">Signal 3: Paid Search Share of Voice vs Bayut</div>
         <div class="sig-value">Rent: ${latRentSOV.toFixed(1)}% | Buy: ${latBuySOV.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: PF share of voice >50% on both Core Rent AND Core Buy for 2 consecutive days</div>
-        <div class="sig-explain">Share of voice = impression share x absolute top-of-page rate, normalized against Bayut. Above 50% means PF is capturing more top-position visibility than the competition on core keywords.</div>
+        <div class="sig-threshold">Threshold: PF paid search share of voice >50% on both Core Rent AND Core Buy for 2 consecutive days</div>
+        <div class="sig-explain">Paid search share of voice = impression share x absolute top-of-page rate, normalized against Bayut. This weights both how often our ads appear and how often they appear in the #1 position. Above 50% means PF is winning the top spot more than the competition on core keywords.</div>
         <div class="sig-status ${shareOK?'met':'not-met'}">${shareOK?'MET':'NOT MET'}</div>
       </div>
     </div>
@@ -326,7 +331,7 @@ function renderReactivation(){
       </div>
     </div>
 
-    <div class="circuit"><strong>Circuit breaker:</strong> If at any point during scaling, sessions WoW moves below 0% for 2 consecutive days, pause the most recently activated channel and reassess before continuing.</div>`;
+    <div class="circuit"><strong>Circuit breaker:</strong> If at any point during scaling, sessions week-over-week moves below 0% for 2 consecutive days, pause the most recently activated channel and reassess before continuing.</div>`;
 }
 
 function renderKPIs(){
@@ -335,14 +340,14 @@ function renderKPIs(){
   const pre=d.filter(r=>r.date>='2026-01-31'&&r.date<CONFLICT);
   const avg=(a,k)=>a.length?a.reduce((s,r)=>s+r[k],0)/a.length:0;
   const kpis=[
-    {label:'Total Sessions Idx',value:avg(post,'total_sessions_idx'),f:'idx',d:avg(post,'total_sessions_idx')-100},
-    {label:'Organic Web Idx',value:avg(post,'organic_sessions_idx'),f:'idx',d:avg(post,'organic_sessions_idx')-100},
-    {label:'Paid Search Idx',value:avg(post,'paid_sessions_idx'),f:'idx',d:avg(post,'paid_sessions_idx')-100},
-    {label:'App Sessions Idx',value:avg(post,'app_sessions_idx'),f:'idx',d:avg(post,'app_sessions_idx')-100},
+    {label:'Total Sessions Index',value:avg(post,'total_sessions_idx'),f:'idx',d:avg(post,'total_sessions_idx')-100},
+    {label:'Organic Web Index',value:avg(post,'organic_sessions_idx'),f:'idx',d:avg(post,'organic_sessions_idx')-100},
+    {label:'Paid Search Index',value:avg(post,'paid_sessions_idx'),f:'idx',d:avg(post,'paid_sessions_idx')-100},
+    {label:'App Sessions Index',value:avg(post,'app_sessions_idx'),f:'idx',d:avg(post,'app_sessions_idx')-100},
     {label:'Google Search $/day',value:avg(post,'paid_cost'),f:'$',d:pre.length?(avg(post,'paid_cost')/avg(pre,'paid_cost')-1)*100:0},
     {label:'Meta Total $/day',value:avg(post,'meta_total_spend'),f:'$',d:pre.length?(avg(post,'meta_total_spend')/avg(pre,'meta_total_spend')-1)*100:0},
-    {label:'PF Total Imp Share',value:avg(post,'pf_total_share'),f:'%',d:avg(post,'pf_total_share')-avg(pre,'pf_total_share')},
-    {label:'Bayut Total Share',value:avg(post,'bayut_total_share'),f:'%',d:avg(post,'bayut_total_share')-avg(pre,'bayut_total_share')},
+    {label:'PF Impression Share',value:avg(post,'pf_total_share'),f:'%',d:avg(post,'pf_total_share')-avg(pre,'pf_total_share')},
+    {label:'Bayut Impression Share',value:avg(post,'bayut_total_share'),f:'%',d:avg(post,'bayut_total_share')-avg(pre,'bayut_total_share')},
   ];
   document.getElementById('kpi-row').innerHTML=kpis.map(k=>`<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${fmt(k.value,k.f)}</div><div class="kpi-sub ${k.d<0?'down':'up'}">${k.d>=0?'+':''}${k.d.toFixed(1)}${k.f==='%'?'pp':k.f==='$'?'%':'pts'}</div></div>`).join('');
 }
@@ -398,23 +403,23 @@ function renderAI(){
   const d=filt(),l=d.map(r=>r.date),lv=aiLevel;
   const names={total:'Total',core_buy:'Core Buy',core_rent:'Core Rent',buy:'Buy (Non-Core)',rent:'Rent (Non-Core)',pf_brand:'PF Brand',competitor:'Competitor Brand'};
   document.getElementById('ai-share-title').textContent='Impression Share | '+names[lv];
-  document.getElementById('ai-top-title').textContent='Abs. Top of Page Rate | '+names[lv];
-  mk('ai-share-chart',{type:'line',data:{labels:l,datasets:[lds('Property Finder',d.map(r=>r['pf_'+lv+'_share']),PF.clay),lds('Bayut',d.map(r=>r['bayut_'+lv+'_share']),PF.green)]},options:{responsive:true,scales:{x:tx(),y:yx('Imp Share %',0,100)},plugins:{annotation:ca()}}});
-  mk('ai-top-chart',{type:'line',data:{labels:l,datasets:[lds('Property Finder',d.map(r=>r['pf_'+lv+'_top']),PF.clay),lds('Bayut',d.map(r=>r['bayut_'+lv+'_top']),PF.green)]},options:{responsive:true,scales:{x:tx(),y:yx('Abs Top %',0,100)},plugins:{annotation:ca()}}});
+  document.getElementById('ai-top-title').textContent='Absolute Top of Page Rate | '+names[lv];
+  mk('ai-share-chart',{type:'line',data:{labels:l,datasets:[lds('Property Finder',d.map(r=>r['pf_'+lv+'_share']),PF.clay),lds('Bayut',d.map(r=>r['bayut_'+lv+'_share']),PF.green)]},options:{responsive:true,scales:{x:tx(),y:yx('Impression Share %',0,100)},plugins:{annotation:ca()}}});
+  mk('ai-top-chart',{type:'line',data:{labels:l,datasets:[lds('Property Finder',d.map(r=>r['pf_'+lv+'_top']),PF.clay),lds('Bayut',d.map(r=>r['bayut_'+lv+'_top']),PF.green)]},options:{responsive:true,scales:{x:tx(),y:yx('Absolute Top %',0,100)},plugins:{annotation:ca()}}});
 }
 function renderSignalChart(){
   const d=filtSig().filter(r=>r.date>=CONFLICT),l=d.map(r=>r.date);
   mk('signal-chart',{type:'line',data:{labels:l,datasets:[
     lds('Sessions WoW %',d.map(r=>r.wow_sessions),PF.clay),
-    lds('Org Leads WoW %',d.map(r=>r.wow_org_leads),'#6ee7b7'),
+    lds('Organic Leads WoW %',d.map(r=>r.wow_org_leads),'#6ee7b7'),
     lds('Paid Leads WoW %',d.map(r=>r.wow_paid_leads),PF.sky),
     {label:'+10% Threshold',data:d.map(()=>10),borderColor:'rgba(255,255,255,0.3)',borderWidth:1,borderDash:[6,3],pointRadius:0,fill:false},
     {label:'0% Line',data:d.map(()=>0),borderColor:'rgba(255,255,255,0.15)',borderWidth:1,pointRadius:0,fill:false}
-  ]},options:{responsive:true,maintainAspectRatio:false,scales:{x:tx(),y:yx('WoW %')},plugins:{legend:{labels:{color:'#B7B1DD',boxWidth:12}}}}});
+  ]},options:{responsive:true,maintainAspectRatio:false,scales:{x:tx(),y:yx('Week-over-Week %')},plugins:{legend:{labels:{color:'#B7B1DD',boxWidth:12}}}}});
 }
 function renderTable(){
   const d=filt();
-  const cols=[['Date','date',''],['Day','day_name',''],['Sess Idx','total_sessions_idx','idx'],['Org Idx','organic_sessions_idx','idx'],['Paid Idx','paid_sessions_idx','idx'],['App Idx','app_sessions_idx','idx'],['Google $','paid_cost','$'],['Meta Ret $','meta_retargeting_spend','$'],['Meta App $',null,'$'],['PF Total %','pf_total_share','%'],['Bayut Total %','bayut_total_share','%']];
+  const cols=[['Date','date',''],['Day','day_name',''],['Sessions','total_sessions_idx','idx'],['Organic','organic_sessions_idx','idx'],['Paid','paid_sessions_idx','idx'],['App','app_sessions_idx','idx'],['Google $','paid_cost','$'],['Meta Ret $','meta_retargeting_spend','$'],['Meta App $',null,'$'],['PF Share %','pf_total_share','%'],['Bayut Share %','bayut_total_share','%']];
   let h='<thead><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr></thead><tbody>';
   d.forEach(r=>{
     const p=r.date>=CONFLICT;
