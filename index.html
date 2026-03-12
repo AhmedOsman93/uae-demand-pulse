@@ -419,7 +419,7 @@ function renderSignalChart(){
 }
 function renderTable(){
   const d=filt();
-  const cols=[['Date','date',''],['Day','day_name',''],['Sessions','total_sessions_idx','idx'],['Organic','organic_sessions_idx','idx'],['Paid','paid_sessions_idx','idx'],['App','app_sessions_idx','idx'],['Google $','paid_cost','$'],['Meta Ret $','meta_retargeting_spend','$'],['Meta App $',null,'$'],['PF Share %','pf_total_share','%'],['Bayut Share %','bayut_total_share','%']];
+  const cols=[['Date','date',''],['Day','day_name',''],['Sessions','total_sessions_idx','idx'],['Organic','organic_sessions_idx','idx'],['Paid','paid_sessions_idx','idx'],['App','app_sessions_idx','idx'],['Google $','paid_cost','$'],['Meta Ret $','meta_retargeting_spend','$'],['Meta App $',null,'$'],['PF Imp. Share % (Total)','pf_total_share','%'],['Bayut Imp. Share % (Total)','bayut_total_share','%']];
   let h='<thead><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr></thead><tbody>';
   d.forEach(r=>{
     const p=r.date>=CONFLICT;
