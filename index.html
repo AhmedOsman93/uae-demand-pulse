@@ -93,6 +93,7 @@ th{text-align:left;padding:7px 8px;color:var(--muted);border-bottom:1px solid va
 td{padding:5px 8px;border-bottom:1px solid rgba(61,53,112,.5);white-space:nowrap;}
 tr.post{background:rgba(234,57,52,.05);}
 footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border-top:1px solid var(--border);margin-top:32px;}
+.tip{border-bottom:1px dashed var(--pf-lavender);cursor:help;position:relative;}.tip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e1b3a;color:#e8e6f0;border:1px solid var(--pf-lavender);border-radius:6px;padding:8px 12px;font-size:11px;font-style:normal;font-weight:400;line-height:1.5;white-space:normal;width:280px;z-index:2000;box-shadow:0 4px 12px rgba(0,0,0,.4);pointer-events:none;}
 @media(max-width:600px){.chart-grid{grid-template-columns:1fr;}header{flex-direction:column;}.signal-grid{grid-template-columns:1fr;}.phase-grid{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -106,7 +107,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
       <div class="brand-divider"></div>
       <div>
         <h1>UAE Demand <span>Pulse</span></h1>
-        <div class="subtitle">Conflict Impact Tracker | Baseline = 100 (4-week same-day avg pre Feb 28) | Growth Marketing Team</div>
+        <div class="subtitle">Conflict Impact Tracker | <span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.">Baseline = 100</span> (4-week same-day avg pre Feb 28) | Growth Marketing Team</div>
       </div>
     </div>
   </div>
@@ -126,7 +127,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
 <div class="kpi-row" id="kpi-row"></div>
 
 <div class="section">
-  <div class="section-title">Sessions Index (Baseline = 100)</div>
+  <div class="section-title">Sessions Index (<span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.">Baseline = 100</span>)</div>
   <div class="chart-grid"><div class="chart-box full-width"><h3>Daily Sessions Index by Channel</h3><canvas id="sessions-chart"></canvas></div></div>
 </div>
 <div class="section">
@@ -167,13 +168,13 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
     <button class="tab" onclick="setAI('competitor')">Competitor Brand</button>
   </div>
   <div class="chart-grid">
-    <div class="chart-box"><h3 id="ai-share-title">Impression Share | Core Keywords</h3><canvas id="ai-share-chart"></canvas></div>
-    <div class="chart-box"><h3 id="ai-top-title">Absolute Top of Page Rate | Core Keywords</h3><canvas id="ai-top-chart"></canvas></div>
+    <div class="chart-box"><h3 id="ai-share-title"><span class="tip" data-tip="The percentage of times your ad appeared out of all the times it was eligible to appear on Google Search.">Impression Share</span> | <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Keywords</span></h3><canvas id="ai-share-chart"></canvas></div>
+    <div class="chart-box"><h3 id="ai-top-title"><span class="tip" data-tip="The percentage of your ad impressions that appeared in the #1 position, above all other ads and organic results on Google Search.">Absolute Top of Page Rate</span> | <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Keywords</span></h3><canvas id="ai-top-chart"></canvas></div>
   </div>
 </div>
 <div class="section">
-  <div class="section-title">Reactivation Signal Trend (Week-over-Week % on 7-Day Rolling Average)</div>
-  <div class="chart-grid"><div class="chart-box full-width"><h3>Sessions Week-over-Week % | Threshold: +10% for 2 consecutive days</h3><canvas id="signal-chart"></canvas></div></div>
+  <div class="section-title">Reactivation Signal Trend (<span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">Week-over-Week</span> % on 7-Day Rolling Average)</div>
+  <div class="chart-grid"><div class="chart-box full-width"><h3>Sessions <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">Week-over-Week</span> % | Threshold: +10% for 2 consecutive days</h3><canvas id="signal-chart"></canvas></div></div>
 </div>
 <div class="section">
   <div class="section-title">Daily Detail</div>
@@ -246,15 +247,20 @@ function renderExec(){
   document.getElementById('exec-summary').innerHTML=`
     <h2>Executive Summary</h2>
     <p style="font-size:15px;font-weight:600;margin-bottom:12px;color:${trending?'#6ee7b7':'var(--pf-clay)'}">
-    ${trending?'Trending Up: Demand is recovering, competitive position is strong.':'Trending Down: Demand continues to move away from baseline.'}</p>
-    <p><strong>Demand:</strong> ${post.length} days since conflict onset (Feb 28). Sessions are at <span class="hl">${latestIdx.toFixed(0)}</span> on index today (baseline = 100),
-    up from <span class="hl">${avg(first3,'total_sessions_idx').toFixed(0)}</span> in the first 3 days post-conflict.
-    The week-over-week change has moved from <span class="hl">${wowFirst.toFixed(1)}%</span> to <span class="hl">${wowLast.toFixed(1)}%</span>, showing demand is closing the gap to pre-conflict levels.</p>
+    ${trending
+      ?'Trending Up: Sessions index moved from '+avg(first3,'total_sessions_idx').toFixed(0)+' to '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.\">baseline = 100</span>). Demand is improving but still below pre-conflict levels.'
+      :'Trending Down: Sessions index is at '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.\">baseline = 100</span>), down from '+avg(first3,'total_sessions_idx').toFixed(0)+' in the first 3 days post-conflict.'}</p>
+    <p><strong>Demand:</strong> ${post.length} days since conflict onset (Feb 28). Sessions are at <span class="hl">${latestIdx.toFixed(0)}</span> on index today (<span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.">baseline = 100</span>),
+    ${trending?'up':'down'} from <span class="hl">${avg(first3,'total_sessions_idx').toFixed(0)}</span> in the first 3 days post-conflict.
+    Week-over-week change has moved from <span class="hl">${wowFirst.toFixed(1)}%</span> to <span class="hl">${wowLast.toFixed(1)}%</span>.</p>
     <p><strong>Spend:</strong> Total daily ad spend adjusted from <span class="hl">$${(totalPre/1000).toFixed(1)}K/day</span> to
     <span class="hl">$${(totalPost/1000).toFixed(1)}K/day</span> (<span class="hl">${spendChg.toFixed(0)}%</span>).
     Budgets are held at current levels until reactivation signals are met.</p>
-    <p><strong>Competitive Position:</strong> PF is outperforming Bayut on top-of-page visibility.
-    Paid search share of voice is <span class="hl">${sovRent.toFixed(0)}%</span> on core rent and <span class="hl">${sovBuy.toFixed(0)}%</span> on core buy (above 50% = PF is winning).</p>
+    <p><strong>Competitive Position:</strong>
+    <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search.">Paid search share of voice</span> is <span class="hl">${sovRent.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core rent</span> and <span class="hl">${sovBuy.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core buy</span>.
+    ${sovRent>50&&sovBuy>50?'Both above 50%, meaning PF holds the top-position advantage over Bayut on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.'
+      :sovRent>50||sovBuy>50?'Mixed: PF leads on '+(sovRent>50?'rent':'buy')+' but trails on '+(sovRent>50?'buy':'rent')+' against Bayut.'
+      :'Both below 50%, meaning Bayut currently holds the top-position advantage on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.'}</p>
     <p><strong>Reactivation Status:</strong> See the reactivation framework below for live signal tracking.
     Once 2 of 3 signals are met for 2 consecutive days, a phased budget scale-up begins.</p>`;
 
@@ -276,29 +282,29 @@ function renderReactivation(){
   document.getElementById('reactivation').innerHTML=`
     <h2>Reactivation Framework</h2>
     <p class="intro">Three signals are tracked daily to determine when to begin scaling budgets back up.
-    Each signal uses a rolling 7-day average compared week-over-week, requiring 2 consecutive days above threshold to confirm the trend is real and not a one-day spike.
+    Each signal uses a rolling 7-day average compared <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">week-over-week</span>, requiring 2 consecutive days above threshold to confirm the trend is real and not a one-day spike.
     When 2 of 3 signals are met simultaneously, the reactivation sequence begins. Reactivation is incremental, not a full switch-on.</p>
 
     <div class="signal-grid">
       <div class="signal-card ${sessOK?'green':'red'}">
         <div class="sig-label">Signal 1: Sessions Recovery</div>
         <div class="sig-value">${latest.wow_sessions>=0?'+':''}${latest.wow_sessions.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: +10% week-over-week for 2 consecutive days</div>
+        <div class="sig-threshold">Threshold: +10% <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">week-over-week</span> for 2 consecutive days</div>
         <div class="sig-explain">Measures total user demand (web + app combined) on a 7-day rolling average vs the prior week. Tells us whether people are coming back to search for properties.</div>
         <div class="sig-status ${sessOK?'met':'not-met'}">${sessOK?'MET':'NOT MET'}</div>
       </div>
       <div class="signal-card ${leadsOK?'green':'red'}">
         <div class="sig-label">Signal 2: Leads Recovery</div>
         <div class="sig-value">Rent: ${latest.wow_org_leads>=0?'+':''}${latest.wow_org_leads.toFixed(1)}% | Sale: ${latest.wow_paid_leads>=0?'+':''}${latest.wow_paid_leads.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: +8% week-over-week for 2 consecutive days (rent or sale)</div>
+        <div class="sig-threshold">Threshold: +8% <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">week-over-week</span> for 2 consecutive days (rent or sale)</div>
         <div class="sig-explain">Measures downstream intent quality. If sessions recover but leads don't follow, scaling spend would buy traffic without conversions. Tracked separately for rent and sale to catch category-specific recovery.</div>
         <div class="sig-status ${leadsOK?'met':'not-met'}">${leadsOK?'MET':'NOT MET'}</div>
       </div>
       <div class="signal-card ${shareOK?'green':'red'}">
-        <div class="sig-label">Signal 3: Paid Search Share of Voice vs Bayut</div>
+        <div class="sig-label">Signal 3: <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search.">Paid Search Share of Voice</span> vs Bayut</div>
         <div class="sig-value">Rent: ${latRentSOV.toFixed(1)}% | Buy: ${latBuySOV.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: PF paid search share of voice >50% on both Core Rent AND Core Buy for 2 consecutive days</div>
-        <div class="sig-explain">Paid search share of voice = impression share x absolute top-of-page rate, normalized against Bayut. This weights both how often our ads appear and how often they appear in the #1 position. Above 50% means PF is winning the top spot more than the competition on core keywords.</div>
+        <div class="sig-threshold">Threshold: PF <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search.">paid search share of voice</span> &gt;50% on both <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Rent</span> AND <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Buy</span> for 2 consecutive days</div>
+        <div class="sig-explain"><span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search.">Paid search share of voice</span> = <span class="tip" data-tip="The percentage of times your ad appeared out of all the times it was eligible to appear on Google Search.">impression share</span> x <span class="tip" data-tip="The percentage of your ad impressions that appeared in the #1 position, above all other ads and organic results on Google Search.">absolute top-of-page rate</span>, normalized against Bayut. This weights both how often our ads appear and how often they appear in the #1 position. Above 50% means PF is appearing in the top position more frequently than Bayut on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.</div>
         <div class="sig-status ${shareOK?'met':'not-met'}">${shareOK?'MET':'NOT MET'}</div>
       </div>
     </div>
@@ -306,7 +312,7 @@ function renderReactivation(){
     <div class="overall-status ${green?'green-light':'red-light'}">
       ${green
         ?'REACTIVATION TRIGGER: GREEN LIGHT | 2 of 3 signals met. Begin Phase 1 below.'
-        :'STATUS: HOLD | '+met+' of 3 signals met (need 2). Recovery momentum is building. Continue monitoring daily.'}
+        :'STATUS: HOLD | '+met+' of 3 signals met (need 2). Continue monitoring daily.'}
     </div>
 
     <h2 style="font-size:13px;color:var(--pf-sand);margin-top:18px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Reactivation Phasing | Incremental Scale-Up</h2>
@@ -315,7 +321,7 @@ function renderReactivation(){
     <div class="phase-grid">
       <div class="phase-card p1">
         <h4>Phase 1 | Day 1-3</h4>
-        <p><span class="channel">Google Search only.</span> Increase daily budget by 25% from current adjusted level. Focus exclusively on top 20 high-intent keywords. Highest intent, lowest waste.</p>
+        <p><span class="channel">Google Search only.</span> Increase daily budget by 25% from current adjusted level. Focus exclusively on top 20 high-intent keywords where cost per lead is lowest.</p>
       </div>
       <div class="phase-card p2">
         <h4>Phase 2 | Day 4-7</h4>
@@ -327,11 +333,11 @@ function renderReactivation(){
       </div>
       <div class="phase-card p4">
         <h4>Phase 4 | Week 3+</h4>
-        <p>Full restoration to pre-conflict levels. Evaluate whether to <span class="channel">exceed pre-conflict spend</span> if Bayut hasn't scaled back up yet. That's share to capture.</p>
+        <p>Full restoration to pre-conflict levels. Evaluate whether to <span class="channel">exceed pre-conflict spend</span> based on Bayut's position and current auction dynamics at that time.</p>
       </div>
     </div>
 
-    <div class="circuit"><strong>Circuit breaker:</strong> If at any point during scaling, sessions week-over-week moves below 0% for 2 consecutive days, pause the most recently activated channel and reassess before continuing.</div>`;
+    <div class="circuit"><strong><span class="tip" data-tip="An automatic pause rule. If performance drops during budget scaling, the most recently activated channel is paused until the trend stabilizes.">Circuit breaker</span>:</strong> If at any point during scaling, sessions <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">week-over-week</span> moves below 0% for 2 consecutive days, pause the most recently activated channel and reassess before continuing.</div>`;
 }
 
 function renderKPIs(){
@@ -346,7 +352,7 @@ function renderKPIs(){
     {label:'App Sessions Index',value:avg(post,'app_sessions_idx'),f:'idx',d:avg(post,'app_sessions_idx')-100},
     {label:'Google Search $/day',value:avg(post,'paid_cost'),f:'$',d:pre.length?(avg(post,'paid_cost')/avg(pre,'paid_cost')-1)*100:0},
     {label:'Meta Total $/day',value:avg(post,'meta_total_spend'),f:'$',d:pre.length?(avg(post,'meta_total_spend')/avg(pre,'meta_total_spend')-1)*100:0},
-    {label:'PF Impression Share',value:avg(post,'pf_total_share'),f:'%',d:avg(post,'pf_total_share')-avg(pre,'pf_total_share')},
+    {label:'PF <span class=\'tip\' data-tip=\'The percentage of times your ad appeared out of all the times it was eligible to appear on Google Search.\'>Impression Share</span>',value:avg(post,'pf_total_share'),f:'%',d:avg(post,'pf_total_share')-avg(pre,'pf_total_share')},
     {label:'Bayut Impression Share',value:avg(post,'bayut_total_share'),f:'%',d:avg(post,'bayut_total_share')-avg(pre,'bayut_total_share')},
   ];
   document.getElementById('kpi-row').innerHTML=kpis.map(k=>`<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${fmt(k.value,k.f)}</div><div class="kpi-sub ${k.d<0?'down':'up'}">${k.d>=0?'+':''}${k.d.toFixed(1)}${k.f==='%'?'pp':k.f==='$'?'%':'pts'}</div></div>`).join('');
