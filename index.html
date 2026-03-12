@@ -107,7 +107,7 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
       <div class="brand-divider"></div>
       <div>
         <h1>UAE Demand <span>Pulse</span></h1>
-        <div class="subtitle">Conflict Impact Tracker | <span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.">Baseline = 100</span> (4-week same-day avg pre Feb 28) | Growth Marketing Team</div>
+        <div class="subtitle">Conflict Impact Tracker | <span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).">Baseline = 100</span> (4-week same-day avg pre Feb 28) | Growth Marketing Team</div>
       </div>
     </div>
   </div>
@@ -127,14 +127,14 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
 <div class="kpi-row" id="kpi-row"></div>
 
 <div class="section">
-  <div class="section-title">Sessions Index (<span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.">Baseline = 100</span>)</div>
+  <div class="section-title">Sessions Index (<span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).">Baseline = 100</span>)</div>
   <div class="chart-grid"><div class="chart-box full-width"><h3>Daily Sessions Index by Channel</h3><canvas id="sessions-chart"></canvas></div></div>
 </div>
 <div class="section">
   <div class="section-title">Leads / Transactions Index</div>
   <div class="chart-grid">
-    <div class="chart-box"><h3>Organic Leads Index (Rent)</h3><canvas id="rent-chart"></canvas></div>
-    <div class="chart-box"><h3>Paid Leads Index (Sale)</h3><canvas id="sale-chart"></canvas></div>
+    <div class="chart-box"><h3>Organic Search Leads Index (Web)</h3><canvas id="rent-chart"></canvas></div>
+    <div class="chart-box"><h3>Paid Search Leads Index (Web)</h3><canvas id="sale-chart"></canvas></div>
   </div>
 </div>
 <div class="section">
@@ -168,19 +168,19 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
     <button class="tab" onclick="setAI('competitor')">Competitor Brand</button>
   </div>
   <div class="chart-grid">
-    <div class="chart-box"><h3 id="ai-share-title"><span class="tip" data-tip="The percentage of times your ad appeared out of all the times it was eligible to appear on Google Search.">Impression Share</span> | <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Keywords</span></h3><canvas id="ai-share-chart"></canvas></div>
-    <div class="chart-box"><h3 id="ai-top-title"><span class="tip" data-tip="The percentage of your ad impressions that appeared in the #1 position, above all other ads and organic results on Google Search.">Absolute Top of Page Rate</span> | <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Keywords</span></h3><canvas id="ai-top-chart"></canvas></div>
+    <div class="chart-box"><h3 id="ai-share-title"><span class="tip" data-tip="The percentage of times a PropertyFinder paid search ad appeared out of all the times it was eligible to appear on Google Search. Source: Google Ads auction insights.">Impression Share</span> | <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Keywords</span></h3><canvas id="ai-share-chart"></canvas></div>
+    <div class="chart-box"><h3 id="ai-top-title"><span class="tip" data-tip="The percentage of PropertyFinder ad impressions that appeared in the #1 position, above all other ads and organic results on Google Search. Source: Google Ads auction insights.">Absolute Top of Page Rate</span> | <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Keywords</span></h3><canvas id="ai-top-chart"></canvas></div>
   </div>
 </div>
 <div class="section">
-  <div class="section-title">Reactivation Signal Trend (<span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">Week-over-Week</span> % on 7-Day Rolling Average)</div>
-  <div class="chart-grid"><div class="chart-box full-width"><h3>Sessions <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">Week-over-Week</span> % | Threshold: +10% for 2 consecutive days</h3><canvas id="signal-chart"></canvas></div></div>
+  <div class="section-title">Reactivation Signal Trend (<span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. A positive value means the trend is accelerating; negative means decelerating.">Week-over-Week</span> % on 7-Day Rolling Average)</div>
+  <div class="chart-grid"><div class="chart-box full-width"><h3>Sessions <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. A positive value means the trend is accelerating; negative means decelerating.">Week-over-Week</span> % | Threshold: +10% for 2 consecutive days</h3><canvas id="signal-chart"></canvas></div></div>
 </div>
 <div class="section">
   <div class="section-title">Daily Detail</div>
   <div style="overflow-x:auto"><table id="detail-table"></table></div>
 </div>
-<footer>Property Finder | Growth Marketing Team | Data as of March 11, 2026 | Baselines: Jan 31 - Feb 27 (4-week same-day avg)</footer>
+<footer id="dash-footer">Property Finder | Growth Marketing Team</footer>
 </div>
 
 <script>
@@ -248,16 +248,16 @@ function renderExec(){
     <h2>Executive Summary</h2>
     <p style="font-size:15px;font-weight:600;margin-bottom:12px;color:${trending?'#6ee7b7':'var(--pf-clay)'}">
     ${trending
-      ?'Trending Up: Sessions index moved from '+avg(first3,'total_sessions_idx').toFixed(0)+' to '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.\">baseline = 100</span>). Demand is improving but still below pre-conflict levels.'
-      :'Trending Down: Sessions index is at '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.\">baseline = 100</span>), down from '+avg(first3,'total_sessions_idx').toFixed(0)+' in the first 3 days post-conflict.'}</p>
-    <p><strong>Demand:</strong> ${post.length} days since conflict onset (Feb 28). Sessions are at <span class="hl">${latestIdx.toFixed(0)}</span> on index today (<span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (ending Feb 27). A value of 80 means 20% below that average.">baseline = 100</span>),
+      ?'Trending Up: Sessions index moved from '+avg(first3,'total_sessions_idx').toFixed(0)+' to '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).\">baseline = 100</span>). Demand is improving but still below pre-conflict levels.'
+      :'Trending Down: Sessions index is at '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).\">baseline = 100</span>), down from '+avg(first3,'total_sessions_idx').toFixed(0)+' in the first 3 days post-conflict.'}</p>
+    <p><strong>Demand:</strong> ${post.length} days since conflict onset (Feb 28). Sessions are at <span class="hl">${latestIdx.toFixed(0)}</span> on index today (<span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).">baseline = 100</span>),
     ${trending?'up':'down'} from <span class="hl">${avg(first3,'total_sessions_idx').toFixed(0)}</span> in the first 3 days post-conflict.
     Week-over-week change has moved from <span class="hl">${wowFirst.toFixed(1)}%</span> to <span class="hl">${wowLast.toFixed(1)}%</span>.</p>
     <p><strong>Spend:</strong> Total daily ad spend adjusted from <span class="hl">$${(totalPre/1000).toFixed(1)}K/day</span> to
     <span class="hl">$${(totalPost/1000).toFixed(1)}K/day</span> (<span class="hl">${spendChg.toFixed(0)}%</span>).
     Budgets are held at current levels until reactivation signals are met.</p>
     <p><strong>Competitive Position:</strong>
-    <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search.">Paid search share of voice</span> is <span class="hl">${sovRent.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core rent</span> and <span class="hl">${sovBuy.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core buy</span>.
+    <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">Paid search share of voice</span> is <span class="hl">${sovRent.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free rental keywords with above-average search volume. Examples: &quot;apartment for rent&quot;, &quot;villa for rent&quot;, &quot;studio for rent&quot;.">core rent</span> and <span class="hl">${sovBuy.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free purchase keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;villa for sale&quot;, &quot;townhouse for sale&quot;.">core buy</span>.
     ${sovRent>50&&sovBuy>50?'Both above 50%, meaning PF holds the top-position advantage over Bayut on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.'
       :sovRent>50||sovBuy>50?'Mixed: PF leads on '+(sovRent>50?'rent':'buy')+' but trails on '+(sovRent>50?'buy':'rent')+' against Bayut.'
       :'Both below 50%, meaning Bayut currently holds the top-position advantage on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.'}</p>
@@ -282,29 +282,29 @@ function renderReactivation(){
   document.getElementById('reactivation').innerHTML=`
     <h2>Reactivation Framework</h2>
     <p class="intro">Three signals are tracked daily to determine when to begin scaling budgets back up.
-    Each signal uses a rolling 7-day average compared <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">week-over-week</span>, requiring 2 consecutive days above threshold to confirm the trend is real and not a one-day spike.
+    Each signal uses a rolling 7-day average compared <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. A positive value means the trend is accelerating; negative means decelerating.">week-over-week</span>, requiring 2 consecutive days above threshold to confirm the trend is real and not a one-day spike.
     When 2 of 3 signals are met simultaneously, the reactivation sequence begins. Reactivation is incremental, not a full switch-on.</p>
 
     <div class="signal-grid">
       <div class="signal-card ${sessOK?'green':'red'}">
         <div class="sig-label">Signal 1: Sessions Recovery</div>
         <div class="sig-value">${latest.wow_sessions>=0?'+':''}${latest.wow_sessions.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: +10% <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">week-over-week</span> for 2 consecutive days</div>
-        <div class="sig-explain">Measures total user demand (web + app combined) on a 7-day rolling average vs the prior week. Tells us whether people are coming back to search for properties.</div>
+        <div class="sig-threshold">Threshold: +10% <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. A positive value means the trend is accelerating; negative means decelerating.">week-over-week</span> for 2 consecutive days</div>
+        <div class="sig-explain">Measures total user demand combining organic search (web, via GA4), paid search (web, via GA4), and app sessions (group-level, via Kochava) on a 7-day rolling average vs the prior week. Tells us whether people are coming back to search for properties.</div>
         <div class="sig-status ${sessOK?'met':'not-met'}">${sessOK?'MET':'NOT MET'}</div>
       </div>
       <div class="signal-card ${leadsOK?'green':'red'}">
         <div class="sig-label">Signal 2: Leads Recovery</div>
-        <div class="sig-value">Rent: ${latest.wow_org_leads>=0?'+':''}${latest.wow_org_leads.toFixed(1)}% | Sale: ${latest.wow_paid_leads>=0?'+':''}${latest.wow_paid_leads.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: +8% <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">week-over-week</span> for 2 consecutive days (rent or sale)</div>
-        <div class="sig-explain">Measures downstream intent quality. If sessions recover but leads don't follow, scaling spend would buy traffic without conversions. Tracked separately for rent and sale to catch category-specific recovery.</div>
+        <div class="sig-value">Organic: ${latest.wow_org_leads>=0?'+':''}${latest.wow_org_leads.toFixed(1)}% | Paid: ${latest.wow_paid_leads>=0?'+':''}${latest.wow_paid_leads.toFixed(1)}%</div>
+        <div class="sig-threshold">Threshold: +8% <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. A positive value means the trend is accelerating; negative means decelerating.">week-over-week</span> for 2 consecutive days (organic or paid)</div>
+        <div class="sig-explain">Measures downstream intent quality (lead submissions on property listings, via GA4). If sessions recover but leads don't follow, scaling spend would buy traffic without conversions. Tracked separately for organic search (web) and paid search (web) to identify which channel is recovering first.</div>
         <div class="sig-status ${leadsOK?'met':'not-met'}">${leadsOK?'MET':'NOT MET'}</div>
       </div>
       <div class="signal-card ${shareOK?'green':'red'}">
-        <div class="sig-label">Signal 3: <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search.">Paid Search Share of Voice</span> vs Bayut</div>
+        <div class="sig-label">Signal 3: <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">Paid Search Share of Voice</span> vs Bayut</div>
         <div class="sig-value">Rent: ${latRentSOV.toFixed(1)}% | Buy: ${latBuySOV.toFixed(1)}%</div>
-        <div class="sig-threshold">Threshold: PF <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search.">paid search share of voice</span> &gt;50% on both <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Rent</span> AND <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">Core Buy</span> for 2 consecutive days</div>
-        <div class="sig-explain"><span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search.">Paid search share of voice</span> = <span class="tip" data-tip="The percentage of times your ad appeared out of all the times it was eligible to appear on Google Search.">impression share</span> x <span class="tip" data-tip="The percentage of your ad impressions that appeared in the #1 position, above all other ads and organic results on Google Search.">absolute top-of-page rate</span>, normalized against Bayut. This weights both how often our ads appear and how often they appear in the #1 position. Above 50% means PF is appearing in the top position more frequently than Bayut on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.</div>
+        <div class="sig-threshold">Threshold: PF <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">paid search share of voice</span> &gt;50% on both <span class="tip" data-tip="Non-branded, location-free rental keywords with above-average search volume. Examples: &quot;apartment for rent&quot;, &quot;villa for rent&quot;, &quot;studio for rent&quot;.">Core Rent</span> AND <span class="tip" data-tip="Non-branded, location-free purchase keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;villa for sale&quot;, &quot;townhouse for sale&quot;.">Core Buy</span> for 2 consecutive days</div>
+        <div class="sig-explain"><span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">Paid search share of voice</span> = <span class="tip" data-tip="The percentage of times a PropertyFinder paid search ad appeared out of all the times it was eligible to appear on Google Search. Source: Google Ads auction insights.">impression share</span> x <span class="tip" data-tip="The percentage of PropertyFinder ad impressions that appeared in the #1 position, above all other ads and organic results on Google Search. Source: Google Ads auction insights.">absolute top-of-page rate</span>, normalized against Bayut. This weights both how often our ads appear and how often they appear in the #1 position. Above 50% means PF is appearing in the top position more frequently than Bayut on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.</div>
         <div class="sig-status ${shareOK?'met':'not-met'}">${shareOK?'MET':'NOT MET'}</div>
       </div>
     </div>
@@ -337,7 +337,7 @@ function renderReactivation(){
       </div>
     </div>
 
-    <div class="circuit"><strong><span class="tip" data-tip="An automatic pause rule. If performance drops during budget scaling, the most recently activated channel is paused until the trend stabilizes.">Circuit breaker</span>:</strong> If at any point during scaling, sessions <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. Shows whether the trend is accelerating or decelerating.">week-over-week</span> moves below 0% for 2 consecutive days, pause the most recently activated channel and reassess before continuing.</div>`;
+    <div class="circuit"><strong><span class="tip" data-tip="An automatic pause rule. If performance drops during budget scaling, the most recently activated channel is paused until the trend stabilizes.">Circuit breaker</span>:</strong> If at any point during scaling, sessions <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. A positive value means the trend is accelerating; negative means decelerating.">week-over-week</span> moves below 0% for 2 consecutive days, pause the most recently activated channel and reassess before continuing.</div>`;
 }
 
 function renderKPIs(){
@@ -349,10 +349,10 @@ function renderKPIs(){
     {label:'Total Sessions Index',value:avg(post,'total_sessions_idx'),f:'idx',d:avg(post,'total_sessions_idx')-100},
     {label:'Organic Web Index',value:avg(post,'organic_sessions_idx'),f:'idx',d:avg(post,'organic_sessions_idx')-100},
     {label:'Paid Search Index',value:avg(post,'paid_sessions_idx'),f:'idx',d:avg(post,'paid_sessions_idx')-100},
-    {label:'App Sessions Index',value:avg(post,'app_sessions_idx'),f:'idx',d:avg(post,'app_sessions_idx')-100},
+    {label:'App Sessions Index (Group)',value:avg(post,'app_sessions_idx'),f:'idx',d:avg(post,'app_sessions_idx')-100},
     {label:'Google Search $/day',value:avg(post,'paid_cost'),f:'$',d:pre.length?(avg(post,'paid_cost')/avg(pre,'paid_cost')-1)*100:0},
     {label:'Meta Total $/day',value:avg(post,'meta_total_spend'),f:'$',d:pre.length?(avg(post,'meta_total_spend')/avg(pre,'meta_total_spend')-1)*100:0},
-    {label:'PF <span class=\'tip\' data-tip=\'The percentage of times your ad appeared out of all the times it was eligible to appear on Google Search.\'>Impression Share</span>',value:avg(post,'pf_total_share'),f:'%',d:avg(post,'pf_total_share')-avg(pre,'pf_total_share')},
+    {label:'PF Impression Share',value:avg(post,'pf_total_share'),f:'%',d:avg(post,'pf_total_share')-avg(pre,'pf_total_share')},
     {label:'Bayut Impression Share',value:avg(post,'bayut_total_share'),f:'%',d:avg(post,'bayut_total_share')-avg(pre,'bayut_total_share')},
   ];
   document.getElementById('kpi-row').innerHTML=kpis.map(k=>`<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${fmt(k.value,k.f)}</div><div class="kpi-sub ${k.d<0?'down':'up'}">${k.d>=0?'+':''}${k.d.toFixed(1)}${k.f==='%'?'pp':k.f==='$'?'%':'pts'}</div></div>`).join('');
@@ -370,7 +370,7 @@ function renderSessions(){
     lds('Total',d.map(r=>r.total_sessions_idx),PF.clay),
     lds('Organic Web',d.map(r=>r.organic_sessions_idx),'#6ee7b7'),
     lds('Paid Search',d.map(r=>r.paid_sessions_idx),PF.sky),
-    lds('App',d.map(r=>r.app_sessions_idx),PF.sand),
+    lds('App (Group)',d.map(r=>r.app_sessions_idx),PF.sand),
     {label:'Baseline (100)',data:d.map(()=>100),borderColor:'rgba(255,255,255,0.25)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}
   ]},options:{responsive:true,maintainAspectRatio:false,scales:{x:tx(),y:yx('Index',0)},plugins:{annotation:ca(),legend:{labels:{color:'#B7B1DD',boxWidth:12}}}}});
 }
@@ -408,8 +408,8 @@ function renderCPR(){
 function renderAI(){
   const d=filt(),l=d.map(r=>r.date),lv=aiLevel;
   const names={total:'Total',core_buy:'Core Buy',core_rent:'Core Rent',buy:'Buy (Non-Core)',rent:'Rent (Non-Core)',pf_brand:'PF Brand',competitor:'Competitor Brand'};
-  document.getElementById('ai-share-title').textContent='Impression Share | '+names[lv];
-  document.getElementById('ai-top-title').textContent='Absolute Top of Page Rate | '+names[lv];
+  document.getElementById('ai-share-title').innerHTML='<span class="tip" data-tip="The percentage of times a PropertyFinder paid search ad appeared out of all the times it was eligible to appear on Google Search. Source: Google Ads auction insights.">Impression Share</span> | '+names[lv];
+  document.getElementById('ai-top-title').innerHTML='<span class="tip" data-tip="The percentage of PropertyFinder ad impressions that appeared in the #1 position, above all other ads and organic results on Google Search. Source: Google Ads auction insights.">Absolute Top of Page Rate</span> | '+names[lv];
   mk('ai-share-chart',{type:'line',data:{labels:l,datasets:[lds('Property Finder',d.map(r=>r['pf_'+lv+'_share']),PF.clay),lds('Bayut',d.map(r=>r['bayut_'+lv+'_share']),PF.green)]},options:{responsive:true,scales:{x:tx(),y:yx('Impression Share %',0,100)},plugins:{annotation:ca()}}});
   mk('ai-top-chart',{type:'line',data:{labels:l,datasets:[lds('Property Finder',d.map(r=>r['pf_'+lv+'_top']),PF.clay),lds('Bayut',d.map(r=>r['bayut_'+lv+'_top']),PF.green)]},options:{responsive:true,scales:{x:tx(),y:yx('Absolute Top %',0,100)},plugins:{annotation:ca()}}});
 }
@@ -438,6 +438,18 @@ function renderTable(){
   document.getElementById('detail-table').innerHTML=h;
 }
 function renderAll(){renderExec();renderReactivation();renderKPIs();renderSessions();renderLeads();renderSpend();renderCPR();renderAI();renderSignalChart();renderTable();}
+// Populate footer with dynamic timestamps
+(function(){
+  const lastDate = ALL[ALL.length-1].date;
+  const opts = {timeZone:'Asia/Dubai',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false};
+  const updatedAt = new Date().toLocaleString('en-US',opts) + ' (Dubai Time)';
+  const dataDate = new Date(lastDate+'T00:00:00').toLocaleDateString('en-US',{timeZone:'Asia/Dubai',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('dash-footer').innerHTML =
+    'Property Finder | Growth Marketing Team | Data as of ' + dataDate +
+    ' | Baselines: Jan 31 &ndash; Feb 27 (4-week same-day avg)' +
+    '<br>Sources: GA4 (web sessions &amp; leads, UAE/QA/BH) &middot; Kochava (app sessions, group-level) &middot; Google Ads (spend, impressions, auction insights)' +
+    '<br>Last updated: ' + updatedAt;
+})();
 renderAll();
 </script>
 </body>
