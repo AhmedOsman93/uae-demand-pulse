@@ -29,6 +29,12 @@ header h1 span{color:var(--pf-clay);}
 .fbtn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;transition:all .2s;}
 .fbtn.active{background:var(--pf-purple);color:#fff;border-color:var(--pf-purple);}
 .fbtn:hover{border-color:var(--pf-lavender);}
+.date-range{display:flex;align-items:center;gap:6px;margin-left:8px;}
+.date-range label{color:var(--muted);font-size:11px;}
+.date-range input[type="date"]{padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:11px;font-family:inherit;cursor:pointer;}
+.date-range input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.7);cursor:pointer;}
+.date-range .reset-dates{padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:11px;transition:all .2s;}
+.date-range .reset-dates:hover{border-color:var(--pf-lavender);color:var(--text);}
 
 /* Exec Summary */
 .exec-summary{background:linear-gradient(135deg,var(--pf-purple) 0%,#2a2060 100%);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:24px;}
@@ -119,6 +125,14 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
     <button class="fbtn active" onclick="setFilter('period','full')">Full Period</button>
     <button class="fbtn" onclick="setFilter('period','post')">Post-Conflict</button>
     <button class="fbtn" onclick="setFilter('period','last2w')">Last 2 Weeks</button>
+    <span style="width:8px"></span>
+    <div class="date-range">
+      <label>From</label>
+      <input type="date" id="date-from" onchange="applyDateRange()">
+      <label>To</label>
+      <input type="date" id="date-to" onchange="applyDateRange()">
+      <button class="reset-dates" id="reset-dates-btn" onclick="resetDateRange()" style="display:none">Clear</button>
+    </div>
   </div>
 </header>
 
@@ -190,7 +204,7 @@ const ALL = RAW.records;
 const SIGNALS = RAW.signals;
 const CONFLICT = '2026-02-28';
 const PF = {clay:'#EA3934',purple:'#3A307F',sand:'#FEBB90',sky:'#B0D8E2',lavender:'#B7B1DD',pink:'#F9BBB3',green:'#22C55E'};
-let filters={days:'all',period:'full'};
+let filters={days:'all',period:'full',dateFrom:null,dateTo:null};
 let aiLevel='total';
 let charts={};
 
@@ -198,7 +212,10 @@ function filt(){
   let d=ALL;
   if(filters.days==='weekday')d=d.filter(r=>r.dow<5);
   else if(filters.days==='weekend')d=d.filter(r=>r.dow>=5);
-  if(filters.period==='post')d=d.filter(r=>r.date>=CONFLICT);
+  if(filters.dateFrom||filters.dateTo){
+    if(filters.dateFrom)d=d.filter(r=>r.date>=filters.dateFrom);
+    if(filters.dateTo)d=d.filter(r=>r.date<=filters.dateTo);
+  } else if(filters.period==='post')d=d.filter(r=>r.date>=CONFLICT);
   else if(filters.period==='last2w'){const c=ALL[ALL.length-1].date;const dt=new Date(c);dt.setDate(dt.getDate()-13);d=d.filter(r=>r.date>=dt.toISOString().slice(0,10));}
   return d;
 }
@@ -206,12 +223,35 @@ function filtSig(){
   let d=SIGNALS;
   if(filters.days==='weekday')d=d.filter(r=>{const dow=new Date(r.date).getDay();return dow>0&&dow<6;});
   else if(filters.days==='weekend')d=d.filter(r=>{const dow=new Date(r.date).getDay();return dow===0||dow===6;});
-  if(filters.period==='post')d=d.filter(r=>r.date>=CONFLICT);
+  if(filters.dateFrom||filters.dateTo){
+    if(filters.dateFrom)d=d.filter(r=>r.date>=filters.dateFrom);
+    if(filters.dateTo)d=d.filter(r=>r.date<=filters.dateTo);
+  } else if(filters.period==='post')d=d.filter(r=>r.date>=CONFLICT);
   else if(filters.period==='last2w'){const c=SIGNALS[SIGNALS.length-1].date;const dt=new Date(c);dt.setDate(dt.getDate()-13);d=d.filter(r=>r.date>=dt.toISOString().slice(0,10));}
   return d;
 }
+function applyDateRange(){
+  const f=document.getElementById('date-from').value;
+  const t=document.getElementById('date-to').value;
+  filters.dateFrom=f||null;
+  filters.dateTo=t||null;
+  const btn=document.getElementById('reset-dates-btn');
+  btn.style.display=(f||t)?'inline-block':'none';
+  if(f||t){filters.period='custom';document.querySelectorAll('.fbtn').forEach(b=>{const m={'Full Period':'full','Post-Conflict':'post','Last 2 Weeks':'last2w'};const v=m[b.textContent];if(v)b.classList.remove('active');});}
+  renderAll();
+}
+function resetDateRange(){
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  filters.dateFrom=null;filters.dateTo=null;
+  filters.period='full';
+  document.getElementById('reset-dates-btn').style.display='none';
+  document.querySelectorAll('.fbtn').forEach(b=>{const m={'Full Period':'full','Post-Conflict':'post','Last 2 Weeks':'last2w'};if(m[b.textContent]==='full')b.classList.add('active');});
+  renderAll();
+}
 function setFilter(type,val){
   filters[type]=val;
+  if(type==='period'){filters.dateFrom=null;filters.dateTo=null;document.getElementById('date-from').value='';document.getElementById('date-to').value='';document.getElementById('reset-dates-btn').style.display='none';}
   document.querySelectorAll('.fbtn').forEach(b=>{
     if(type==='days'){const m={'All Days':'all','Weekdays':'weekday','Weekends':'weekend'};b.classList.toggle('active',m[b.textContent]===val);}
     if(type==='period'){const m={'Full Period':'full','Post-Conflict':'post','Last 2 Weeks':'last2w'};b.classList.toggle('active',m[b.textContent]===val);}
@@ -227,26 +267,31 @@ function fmt(v,t){
 }
 
 function renderExec(){
-  const post=ALL.filter(r=>r.date>=CONFLICT);
-  const pre=ALL.filter(r=>r.date>='2026-01-31'&&r.date<CONFLICT);
+  const fd=filt();
+  const post=fd.filter(r=>r.date>=CONFLICT);
+  const pre=fd.filter(r=>r.date>='2026-01-31'&&r.date<CONFLICT);
   const avg=(a,k)=>a.length?a.reduce((s,r)=>s+r[k],0)/a.length:0;
   const first3=post.slice(0,3),last3=post.slice(-3);
   const sessRec=avg(last3,'total_sessions_idx')-avg(first3,'total_sessions_idx');
   const totalPre=avg(pre,'paid_cost')+avg(pre,'meta_total_spend');
   const totalPost=avg(post,'paid_cost')+avg(post,'meta_total_spend');
-  const spendChg=((totalPost/totalPre)-1)*100;
-  const postSigs=RAW.signals.filter(s=>s.date>=CONFLICT);
+  const spendChg=totalPre>0?((totalPost/totalPre)-1)*100:0;
+  const fSigs=filtSig();
+  const postSigs=fSigs.filter(s=>s.date>=CONFLICT);
   const last7Sigs=postSigs.slice(-7);
   const wowFirst=last7Sigs.length?last7Sigs[0].wow_sessions:0;
   const wowLast=last7Sigs.length?last7Sigs[last7Sigs.length-1].wow_sessions:0;
-  const latestRec=ALL[ALL.length-1];
+  const latestRec=fd.length?fd[fd.length-1]:ALL[ALL.length-1];
   function execSov(v){const ps=(latestRec['pf_'+v+'_share']||0)/100*(latestRec['pf_'+v+'_top']||0)/100;const bs=(latestRec['bayut_'+v+'_share']||0)/100*(latestRec['bayut_'+v+'_top']||0)/100;return(ps+bs)>0?ps/(ps+bs)*100:0;}
   const sovBuy=execSov('core_buy'),sovRent=execSov('core_rent');
   const latestIdx=post.length?post[post.length-1].total_sessions_idx:0;
   const trending=avg(last3,'total_sessions_idx')>avg(first3,'total_sessions_idx');
 
+  const execDate=new Date(ALL[ALL.length-1].date+'T00:00:00');
+  const dd=execDate.getDate();const suf=dd===1||dd===21||dd===31?'st':dd===2||dd===22?'nd':dd===3||dd===23?'rd':'th';
+  const mn=execDate.toLocaleDateString('en-US',{month:'long'});const yr=execDate.getFullYear();
   document.getElementById('exec-summary').innerHTML=`
-    <h2>Executive Summary</h2>
+    <h2>Executive Summary as of ${dd}${suf} of ${mn} ${yr}</h2>
     <p style="font-size:15px;font-weight:600;margin-bottom:12px;color:${trending?'#6ee7b7':'var(--pf-clay)'}">
     ${trending
       ?'Trending Up: Sessions index moved from '+avg(first3,'total_sessions_idx').toFixed(0)+' to '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).\">baseline = 100</span>). Demand is improving but still below pre-conflict levels.'
@@ -268,12 +313,15 @@ function renderExec(){
 }
 
 function renderReactivation(){
-  const latest=SIGNALS[SIGNALS.length-1];
-  const prev=SIGNALS[SIGNALS.length-2];
+  const fSigs=filtSig();
+  const fd=filt();
+  if(fSigs.length<2||fd.length<2){document.getElementById('reactivation').innerHTML='<h2>Reactivation Framework</h2><p class="intro">Not enough data in selected range. Expand your date range to see signal status.</p>';return;}
+  const latest=fSigs[fSigs.length-1];
+  const prev=fSigs[fSigs.length-2];
   const sessOK=latest.wow_sessions>=10&&prev.wow_sessions>=10;
   const leadsOK=(latest.wow_org_leads>=8&&prev.wow_org_leads>=8)||(latest.wow_paid_leads>=8&&prev.wow_paid_leads>=8);
   function sov(r,v){const ps=(r['pf_'+v+'_share']||0)/100*(r['pf_'+v+'_top']||0)/100;const bs=(r['bayut_'+v+'_share']||0)/100*(r['bayut_'+v+'_top']||0)/100;return(ps+bs)>0?ps/(ps+bs)*100:0;}
-  const latRec=ALL[ALL.length-1],prevRec=ALL[ALL.length-2];
+  const latRec=fd[fd.length-1],prevRec=fd[fd.length-2];
   const latBuySOV=sov(latRec,'core_buy'),prevBuySOV=sov(prevRec,'core_buy');
   const latRentSOV=sov(latRec,'core_rent'),prevRentSOV=sov(prevRec,'core_rent');
   const coreBuyOK=latBuySOV>50&&prevBuySOV>50;const coreRentOK=latRentSOV>50&&prevRentSOV>50;const shareOK=coreBuyOK&&coreRentOK;
@@ -450,6 +498,11 @@ function renderAll(){renderExec();renderReactivation();renderKPIs();renderSessio
     ' | Baselines: Jan 31 &ndash; Feb 27 (4-week same-day avg)' +
     '<br>Sources: GA4 (web sessions &amp; leads, UAE/QA/BH) &middot; Kochava (app sessions, group-level) &middot; Google Ads (spend, impressions, auction insights)' +
     '<br>Last updated: ' + updatedAt;
+})();
+(function initDatePickers(){
+  const minD=ALL[0].date,maxD=ALL[ALL.length-1].date;
+  const df=document.getElementById('date-from'),dt=document.getElementById('date-to');
+  df.min=minD;df.max=maxD;dt.min=minD;dt.max=maxD;
 })();
 renderAll();
 </script>
