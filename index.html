@@ -275,8 +275,9 @@ function renderExec(){
   const first3=post.slice(0,3),last3=post.slice(-3);
   const sessRec=avg(last3,'total_sessions_idx')-avg(first3,'total_sessions_idx');
   const totalPre=avg(pre,'paid_cost')+avg(pre,'meta_total_spend');
-  const totalPost=avg(post,'paid_cost')+avg(post,'meta_total_spend');
-  const spendChg=totalPre>0?((totalPost/totalPre)-1)*100:0;
+  const last7=post.slice(-7);
+  const totalRecent=avg(last7,'paid_cost')+avg(last7,'meta_total_spend');
+  const spendChg=totalPre>0?((totalRecent/totalPre)-1)*100:0;
   const fSigs=filtSig();
   const postSigs=fSigs.filter(s=>s.date>=CONFLICT);
   const last7Sigs=postSigs.slice(-7);
@@ -313,8 +314,8 @@ function renderExec(){
     Organic leads WoW is at <span class="${latestSig.wow_org_leads>=8?'pos':'hl'}">${latestSig.wow_org_leads>=0?'+':''}${latestSig.wow_org_leads.toFixed(1)}%</span> with an index of <span class="${orgLeadsIdx>=80?'pos':'hl'}">${orgLeadsIdx.toFixed(0)}</span>
     (<span class="hl">${(100-orgLeadsIdx).toFixed(0)}%</span> below baseline).
     Both are accelerating week-over-week, but paid search is closer to full recovery in absolute terms.</p>
-    <p><strong>Spend:</strong> Total daily ad spend adjusted from <span class="hl">$${(totalPre/1000).toFixed(1)}K/day</span> to
-    <span class="hl">$${(totalPost/1000).toFixed(1)}K/day</span> (<span class="${spendChg>=0?'pos':'hl'}">${spendChg>=0?'+':''}${spendChg.toFixed(0)}%</span>).</p>
+    <p><strong>Spend:</strong> Pre-conflict average was <span class="hl">$${(totalPre/1000).toFixed(1)}K/day</span>.
+    Last 7 days are averaging <span class="hl">$${(totalRecent/1000).toFixed(1)}K/day</span> (<span class="${spendChg>=0?'pos':'hl'}">${spendChg>=0?'+':''}${spendChg.toFixed(0)}%</span> vs pre-conflict), trending upward as channels are reactivated.</p>
     <p><strong>Competitive Position:</strong>
     <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">Paid search share of voice</span> is <span class="${sovRent>50?'pos':'hl'}">${sovRent.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free rental keywords with above-average search volume. Examples: &quot;apartment for rent&quot;, &quot;villa for rent&quot;, &quot;studio for rent&quot;.">core rent</span> and <span class="${sovBuy>50?'pos':'hl'}">${sovBuy.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free purchase keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;villa for sale&quot;, &quot;townhouse for sale&quot;.">core buy</span>.
     ${sovRent>50&&sovBuy>50?'Both above 50%, meaning PF holds the top-position advantage over Bayut on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.'
