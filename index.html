@@ -105,7 +105,45 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:20px 0;border
 </style>
 </head>
 <body>
-<div class="container">
+<!-- Password Gate -->
+<div id="login-overlay" style="position:fixed;inset:0;z-index:9999;background:#0a0f1a;display:flex;align-items:center;justify-content:center;font-family:Inter,system-ui,sans-serif;">
+  <div style="text-align:center;max-width:360px;width:90%;">
+    <div style="margin-bottom:24px;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <h2 style="color:#e2e8f0;font-size:20px;font-weight:600;margin:0 0 6px;">UAE Demand Pulse</h2>
+    <p style="color:#64748b;font-size:13px;margin:0 0 24px;">Enter password to access the dashboard</p>
+    <form onsubmit="return checkPassword()" style="display:flex;flex-direction:column;gap:12px;">
+      <input type="password" id="pwd-input" placeholder="Password" autofocus
+        style="padding:10px 14px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font-size:14px;outline:none;transition:border .2s;"
+        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#334155'">
+      <button type="submit"
+        style="padding:10px 14px;border-radius:8px;border:none;background:#6366f1;color:#fff;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s;"
+        onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">
+        Access Dashboard
+      </button>
+      <p id="pwd-error" style="color:#ef4444;font-size:12px;margin:4px 0 0;display:none;">Incorrect password. Try again.</p>
+    </form>
+  </div>
+</div>
+<script>
+const _k=[67,104,97,110,103,101,76,105,118,105,110,103,52,71,111,111,100];
+function checkPassword(){
+  const input=document.getElementById('pwd-input').value;
+  if(input===String.fromCharCode(..._k)){
+    document.getElementById('login-overlay').style.display='none';
+    document.getElementById('main-container').style.display='block';
+    try{sessionStorage.setItem('dp_auth','1');}catch(e){}
+    if(typeof renderAll==='function') renderAll();
+    return false;
+  }
+  document.getElementById('pwd-error').style.display='block';
+  document.getElementById('pwd-input').value='';
+  document.getElementById('pwd-input').focus();
+  return false;
+}
+</script>
+<div class="container" id="main-container" style="display:none">
 
 <header>
   <div>
@@ -517,7 +555,12 @@ function renderAll(){renderExec();renderReactivation();renderKPIs();renderSessio
   const df=document.getElementById('date-from'),dt=document.getElementById('date-to');
   df.min=minD;df.max=maxD;dt.min=minD;dt.max=maxD;
 })();
-renderAll();
+// Defer renderAll until dashboard is visible (password gate)
+try{if(sessionStorage.getItem('dp_auth')==='1'){
+  document.getElementById('main-container').style.display='block';
+  document.getElementById('login-overlay').style.display='none';
+  renderAll();
+}}catch(e){}
 </script>
 </body>
 </html>
