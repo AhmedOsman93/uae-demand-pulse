@@ -375,7 +375,7 @@ function renderReactivation(){
   const latRec=fd[fd.length-1],prevRec=fd[fd.length-2];
   const latBuySOV=sov(latRec,'core_buy'),prevBuySOV=sov(prevRec,'core_buy');
   const latRentSOV=sov(latRec,'core_rent'),prevRentSOV=sov(prevRec,'core_rent');
-  const coreBuyOK=latBuySOV>50&&prevBuySOV>50;const coreRentOK=latRentSOV>50&&prevRentSOV>50;const shareOK=coreBuyOK&&coreRentOK;
+  const coreBuyOK=latBuySOV>50;const coreRentOK=latRentSOV>50;const shareOK=coreBuyOK&&coreRentOK;
   const met=[sessOK,leadsOK,shareOK].filter(Boolean).length;
   const green=met>=2;
 
