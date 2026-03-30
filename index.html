@@ -230,11 +230,12 @@ function checkPassword(){
 </div>
 
 <div class="section">
-  <div class="section-title">Cost Per Result</div>
+  <div class="section-title">Cost Per Result &amp; Volume</div>
   <div class="chart-grid">
     <div class="chart-box"><h3>Google Search: Cost Per Lead (USD)</h3><canvas id="google-cpl-chart"></canvas></div>
     <div class="chart-box"><h3>Meta: Cost Per Install (USD) | iOS vs Android</h3><canvas id="meta-cpi-chart"></canvas></div>
     <div class="chart-box"><h3>Meta: Cost Per Retargeting Purchase (USD)</h3><canvas id="meta-cpr-retarget-chart"></canvas></div>
+    <div class="chart-box"><h3>Meta: Retargeting Purchases (Daily Count)</h3><canvas id="meta-retarget-results-chart"></canvas></div>
     <div class="chart-box"><h3>Meta: Cost Per Engagement (USD)</h3><canvas id="meta-cpr-engage-chart"></canvas></div>
   </div>
 </div>
@@ -394,9 +395,11 @@ function setFilter(type,val){
 }
 function setAI(l){aiLevel=l;document.querySelectorAll('#ai-tabs .tab').forEach(t=>{const m={'Total':'total','Core Total':'core_total','Core Buy':'core_buy','Core Rent':'core_rent','Buy':'buy','Rent':'rent','PF Brand':'pf_brand','Competitor Brand':'competitor'};t.classList.toggle('active',m[t.textContent]===l);});renderAI();}
 function fmt(v,t){
+  if(v==null||isNaN(v))return '—';
   if(t==='$')return v>=1000?'$'+(v/1000).toFixed(1)+'K':'$'+v.toFixed(0);
   if(t==='%')return v.toFixed(1)+'%';
   if(t==='idx')return v.toFixed(1);
+  if(t==='n')return v>=1000?(v/1000).toFixed(1)+'K':v.toFixed(0);
   return v>=1000?(v/1000).toFixed(1)+'K':v.toFixed(0);
 }
 
@@ -411,6 +414,11 @@ function renderExec(){
   const last7=post.slice(-7);
   const totalRecent=avg(last7,'paid_cost')+avg(last7,'meta_total_spend');
   const spendChg=totalPre>0?((totalRecent/totalPre)-1)*100:0;
+  const paidImprPost=avg(last7,'paid_impressions');
+  const paidImprPre=avg(pre,'paid_impressions');
+  const imprChg=paidImprPre>0?((paidImprPost/paidImprPre)-1)*100:0;
+  const cpmInflation=spendChg>0&&imprChg<0;
+  const cpmDeflation=spendChg<0&&imprChg>0;
   const fSigs=filtSig();
   const postSigs=fSigs.filter(s=>s.date>=CONFLICT);
   const last7Sigs=postSigs.slice(-7);
@@ -424,6 +432,11 @@ function renderExec(){
 
   // Compute leads WoW and index for exec summary
   const latestSig=fSigs.length?fSigs[fSigs.length-1]:{wow_sessions:0,wow_org_leads:0,wow_paid_leads:0};
+  const prevSig=fSigs.length>=2?fSigs[fSigs.length-2]:{wow_sessions:0,wow_org_leads:0,wow_paid_leads:0};
+  const sessOK_=(latestSig.wow_sessions>=10)&&(prevSig.wow_sessions>=10);
+  const leadsOK_=((latestSig.wow_org_leads>=8)&&(prevSig.wow_org_leads>=8))||((latestSig.wow_paid_leads>=8)&&(prevSig.wow_paid_leads>=8));
+  const shareOK_=sovBuy>50&&sovRent>50;
+  const metCount=[sessOK_,leadsOK_,shareOK_].filter(Boolean).length;
   const orgLeadsIdx=latestRec.organic_transactions_idx||0;
   const paidLeadsIdx=latestRec.paid_transactions_idx||0;
 
@@ -435,12 +448,12 @@ function renderExec(){
     <p style="font-size:15px;font-weight:600;margin-bottom:12px;color:${trending?'#6ee7b7':'var(--pf-clay)'}">
     ${trending
       ?'Trending Up: Sessions index moved from '+avg(first3,'total_sessions_idx').toFixed(0)+' to '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).\">baseline = 100</span>). Demand is improving but still below pre-conflict levels.'
-      :'Trending Down: Sessions index is at '+latestIdx.toFixed(0)+' (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).\">baseline = 100</span>), down from '+avg(first3,'total_sessions_idx').toFixed(0)+' in the first 3 days post-conflict.'}</p>
+      :'Trending Down: Sessions index at '+latestIdx.toFixed(0)+' today (<span class=\"tip\" data-tip=\"The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).\">baseline = 100</span>). 3-day average is '+avg(last3,'total_sessions_idx').toFixed(0)+', vs '+avg(first3,'total_sessions_idx').toFixed(0)+' in the first 3 days post-conflict.'}</p>
     <p><strong>Demand:</strong> ${post.length} days since conflict onset (Feb 28). Sessions are at <span class="${latestIdx>=100?'pos':'hl'}">${latestIdx.toFixed(0)}</span> on index today (<span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web) and Kochava (app).">baseline = 100</span>),
-    ${trending?'up':'down'} from <span class="hl">${avg(first3,'total_sessions_idx').toFixed(0)}</span> in the first 3 days post-conflict.
+    ${latestIdx>=avg(first3,'total_sessions_idx')?'up':'down'} from <span class="hl">${avg(first3,'total_sessions_idx').toFixed(0)}</span> in the first 3 days post-conflict.
     Week-over-week momentum is at <span class="${wowLast>=10?'pos':wowLast>=0?'pos':'hl'}">${wowLast>=0?'+':''}${wowLast.toFixed(1)}%</span>,
-    confirming demand is accelerating even though the absolute level remains <span class="hl">${(100-latestIdx).toFixed(0)}%</span> below pre-conflict baseline.
-    The 7-day rolling average compares Mon-Sun vs the prior Mon-Sun, so this is not a weekend artifact.</p>
+    ${wowLast>0?'confirming demand is trending upward even though the':'the'} absolute level remains <span class="hl">${(100-latestIdx).toFixed(0)}%</span> below pre-conflict baseline${wowLast<0?' \u2014 WoW has turned negative; watch for further deterioration':''}.
+    ${wowLast>0?'The 7-day rolling average compares Mon-Sun vs the prior Mon-Sun, so this is not a weekend artifact.':''}</p>
     <p><strong>Leads:</strong> Paid leads are recovering faster than organic.
     Paid leads WoW is at <span class="${latestSig.wow_paid_leads>=8?'pos':'hl'}">${latestSig.wow_paid_leads>=0?'+':''}${latestSig.wow_paid_leads.toFixed(1)}%</span> with an index of <span class="${paidLeadsIdx>=80?'pos':'hl'}">${paidLeadsIdx.toFixed(0)}</span>
     (<span class="hl">${(100-paidLeadsIdx).toFixed(0)}%</span> below baseline).
@@ -448,13 +461,20 @@ function renderExec(){
     (<span class="hl">${(100-orgLeadsIdx).toFixed(0)}%</span> below baseline).
     Both are accelerating week-over-week, but paid search is closer to full recovery in absolute terms.</p>
     <p><strong>Spend:</strong> Pre-conflict average was <span class="hl">$${(totalPre/1000).toFixed(1)}K/day</span>.
-    Last 7 days are averaging <span class="hl">$${(totalRecent/1000).toFixed(1)}K/day</span> (<span class="${spendChg>=0?'pos':'hl'}">${spendChg>=0?'+':''}${spendChg.toFixed(0)}%</span> vs pre-conflict), trending upward as channels are reactivated.</p>
+    Last 7 days are averaging <span class="hl">$${(totalRecent/1000).toFixed(1)}K/day</span> (<span class="${spendChg>=0?'pos':'hl'}">${spendChg>=0?'+':''}${spendChg.toFixed(0)}%</span> vs pre-conflict), trending upward as channels are reactivated.
+    ${cpmInflation
+  ?`Paid impressions are averaging <span class="hl">${fmt(paidImprPost,'n')}/day</span> (<span class="hl">${imprChg>=0?'+':''}${imprChg.toFixed(0)}%</span> vs pre-conflict) — spend is up while impressions are down, indicating <span class="tip" data-tip="Cost Per Mille (CPM): when spend rises but impressions fall, each impression costs more — a signal of increased auction pressure post-conflict.">CPM inflation</span> in paid search.`
+  :cpmDeflation
+  ?`Paid impressions are averaging <span class="hl">${fmt(paidImprPost,'n')}/day</span> (<span class="pos">${imprChg>=0?'+':''}${imprChg.toFixed(0)}%</span> vs pre-conflict) — impressions are rising while spend is down, a positive sign of <span class="tip" data-tip="CPM is falling: more impressions per dollar spent. The market is becoming more efficient.">improving CPM efficiency</span>.`
+  :`Paid impressions are averaging <span class="hl">${fmt(paidImprPost,'n')}/day</span> (<span class="${imprChg>=0?'pos':'hl'}">${imprChg>=0?'+':''}${imprChg.toFixed(0)}%</span> vs pre-conflict).`}</p>
     <p><strong>Competitive Position:</strong>
     <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">Paid search share of voice</span> is <span class="${sovRent>50?'pos':'hl'}">${sovRent.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free rental keywords with above-average search volume. Examples: &quot;apartment for rent&quot;, &quot;villa for rent&quot;, &quot;studio for rent&quot;.">core rent</span> and <span class="${sovBuy>50?'pos':'hl'}">${sovBuy.toFixed(0)}%</span> on <span class="tip" data-tip="Non-branded, location-free purchase keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;villa for sale&quot;, &quot;townhouse for sale&quot;.">core buy</span>.
     ${sovRent>50&&sovBuy>50?'Both above 50%, meaning PF holds the top-position advantage over Bayut on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.'
       :sovRent>50||sovBuy>50?'Mixed: PF leads on '+(sovRent>50?'rent':'buy')+' but trails on '+(sovRent>50?'buy':'rent')+' against Bayut.'
       :'Both below 50%, meaning Bayut currently holds the top-position advantage on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.'}</p>
-    <p><strong>Next Steps:</strong> All 3 reactivation signals are met. Currently in <span class="tip" data-tip="Google Search and Meta retargeting are live (Phase 2 complete). App install campaigns (iOS + Android) are running. Continue scaling toward pre-conflict levels while monitoring whether leads index catches up to the WoW momentum signal.">Phase 3</span>. If the current trajectory holds through the week, evaluate advancing to <span class="tip" data-tip="Full restoration to pre-conflict spend levels. Evaluate whether to exceed pre-conflict spend based on Bayut's position and current auction dynamics. Gate: sessions index trending toward 85+ and leads WoW remaining positive.">Phase 4</span> (full budget restoration).</p>`;
+    <p><strong>Next Steps:</strong> ${metCount}/3 reactivation signals met. ${metCount>=2
+      ?'Currently in <span class="tip" data-tip="Google Search and Meta retargeting are live (Phase 2 complete). App install campaigns (iOS + Android) are running. Continue scaling toward pre-conflict levels while monitoring whether leads index catches up to the WoW momentum signal.">Phase 3</span>. If the current trajectory holds through the week, evaluate advancing to <span class="tip" data-tip="Full restoration to pre-conflict spend levels. Evaluate whether to exceed pre-conflict spend based on Bayut\'s position and current auction dynamics. Gate: sessions index trending toward 85+ and leads WoW remaining positive.">Phase 4</span> (full budget restoration).'
+      :'<strong>Status: HOLD.</strong> Reactivation requires 2 of 3 signals. Continue monitoring daily until threshold is reached.'}</p>`;
 
 }
 
@@ -545,12 +565,14 @@ function renderKPIs(){
     {label:'Organic Web Index',value:avg(post,'organic_sessions_idx'),f:'idx',d:avg(post,'organic_sessions_idx')-100},
     {label:'Paid Search Index',value:avg(post,'paid_sessions_idx'),f:'idx',d:avg(post,'paid_sessions_idx')-100},
     {label:'App Sessions Index (Group)',value:avg(post,'app_sessions_idx'),f:'idx',d:avg(post,'app_sessions_idx')-100},
+    {label:'App Transactions/day',value:avg(post,'app_transactions'),f:'n',d:pre.length&&avg(pre,'app_transactions')>0?(avg(post,'app_transactions')/avg(pre,'app_transactions')-1)*100:0},
+    {label:'Paid Impressions/day',value:avg(post,'paid_impressions'),f:'n',d:pre.length&&avg(pre,'paid_impressions')>0?(avg(post,'paid_impressions')/avg(pre,'paid_impressions')-1)*100:0},
     {label:'Google Search $/day',value:avg(post,'paid_cost'),f:'$',d:pre.length?(avg(post,'paid_cost')/avg(pre,'paid_cost')-1)*100:0},
     {label:'Meta Total $/day',value:avg(post,'meta_total_spend'),f:'$',d:pre.length?(avg(post,'meta_total_spend')/avg(pre,'meta_total_spend')-1)*100:0},
     {label:'PF Impression Share',value:avg(post,'pf_total_share'),f:'%',d:avg(post,'pf_total_share')-avg(pre,'pf_total_share')},
     {label:'Bayut Impression Share',value:avg(post,'bayut_total_share'),f:'%',d:avg(post,'bayut_total_share')-avg(pre,'bayut_total_share')},
   ];
-  document.getElementById('kpi-row').innerHTML=kpis.map(k=>`<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${fmt(k.value,k.f)}</div><div class="kpi-sub ${k.d<0?'down':'up'}">${k.d>=0?'+':''}${k.d.toFixed(1)}${k.f==='%'?'pp':k.f==='$'?'%':'pts'}</div></div>`).join('');
+  document.getElementById('kpi-row').innerHTML=kpis.map(k=>`<div class="kpi"><div class="kpi-label">${k.label}</div><div class="kpi-value">${fmt(k.value,k.f)}</div><div class="kpi-sub ${k.d<0?'down':'up'}">${k.d>=0?'+':''}${k.d.toFixed(1)}${k.f==='%'?'pp':k.f==='$'||k.f==='n'?'%':'pts'}</div></div>`).join('');
 }
 
 function mk(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg);}
@@ -599,6 +621,7 @@ function renderCPR(){
   ]},options:{responsive:true,scales:{x:tx(),y:yx('USD')},plugins:{annotation:ca()}}});
   mk('meta-cpr-retarget-chart',{type:'line',data:{labels:l,datasets:[{label:'Cost Per Purchase',data:d.map(r=>r.meta_cpr_retargeting),borderColor:PF.lavender,backgroundColor:PF.lavender+'30',fill:true,tension:0.3,pointRadius:2}]},options:{responsive:true,scales:{x:tx(),y:yx('USD')},plugins:{annotation:ca()}}});
   mk('meta-cpr-engage-chart',{type:'line',data:{labels:l,datasets:[{label:'Cost Per In-App Purchase',data:d.map(r=>r.meta_cpr_engagement),borderColor:PF.sand,backgroundColor:PF.sand+'30',fill:true,tension:0.3,pointRadius:2,spanGaps:true}]},options:{responsive:true,scales:{x:tx(),y:yx('USD')},plugins:{annotation:ca()}}});
+  mk('meta-retarget-results-chart',{type:'line',data:{labels:l,datasets:[{label:'Retargeting Purchases',data:d.map(r=>r.meta_retargeting_results),borderColor:PF.green,backgroundColor:PF.green+'30',fill:true,tension:0.3,pointRadius:2,spanGaps:true}]},options:{responsive:true,scales:{x:tx(),y:yx('Purchases')},plugins:{annotation:ca()}}});
 }
 function renderAI(){
   const d=filt(),l=d.map(r=>r.date),lv=aiLevel;
@@ -620,13 +643,13 @@ function renderSignalChart(){
 }
 function renderTable(){
   const d=filt();
-  const cols=[['Date','date',''],['Day','day_name',''],['Sessions','total_sessions_idx','idx'],['Organic','organic_sessions_idx','idx'],['Paid','paid_sessions_idx','idx'],['App','app_sessions_idx','idx'],['Google $','paid_cost','$'],['Meta Ret $','meta_retargeting_spend','$'],['Meta App $',null,'$'],['PF Imp. Share % (Total)','pf_total_share','%'],['Bayut Imp. Share % (Total)','bayut_total_share','%']];
+  const cols=[['Date','date',''],['Day','day_name',''],['Sessions','total_sessions_idx','idx'],['Organic','organic_sessions_idx','idx'],['Paid','paid_sessions_idx','idx'],['App','app_sessions_idx','idx'],['App Txns','app_transactions','n'],['Google $','paid_cost','$'],['Meta Ret $','meta_retargeting_spend','$'],['Meta App $',null,'$'],['PF Imp. Share % (Total)','pf_total_share','%'],['Bayut Imp. Share % (Total)','bayut_total_share','%']];
   let h='<thead><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr></thead><tbody>';
   d.forEach(r=>{
     const p=r.date>=CONFLICT;
     const ma=(r.meta_ios_spend||0)+(r.meta_android_spend||0)+(r.meta_engagement_spend||0);
     h+='<tr class="'+(p?'post':'')+'">';
-    cols.forEach(c=>{let v;if(c[0]==='Meta App $')v=ma;else v=r[c[1]];if(c[2]==='$')h+='<td>'+fmt(v,'$')+'</td>';else if(c[2]==='%')h+='<td>'+(v||0).toFixed(1)+'%</td>';else if(c[2]==='idx')h+='<td style="color:'+(v<90?'var(--pf-clay)':v>110?'#6ee7b7':'var(--text)')+'">'+(v||0).toFixed(1)+'</td>';else h+='<td>'+v+'</td>';});
+    cols.forEach(c=>{let v;if(c[0]==='Meta App $')v=ma;else v=r[c[1]];if(c[2]==='$')h+='<td>'+fmt(v,'$')+'</td>';else if(c[2]==='%')h+='<td>'+(v||0).toFixed(1)+'%</td>';else if(c[2]==='idx')h+='<td style="color:'+(v<90?'var(--pf-clay)':v>110?'#6ee7b7':'var(--text)')+'">'+(v||0).toFixed(1)+'</td>';else if(c[2]==='n')h+='<td>'+fmt(v,'n')+'</td>';else h+='<td>'+v+'</td>';});
     h+='</tr>';
   });
   h+='</tbody>';
