@@ -213,11 +213,8 @@ function checkPassword(){
   <div class="chart-grid"><div class="chart-box full-width"><h3>Daily Sessions Index by Channel</h3><canvas id="sessions-chart"></canvas></div></div>
 </div>
 <div class="section">
-  <div class="section-title">Leads / Transactions Index</div>
-  <div class="chart-grid">
-    <div class="chart-box"><h3>Organic Search Leads Index (Web)</h3><canvas id="rent-chart"></canvas></div>
-    <div class="chart-box"><h3>Paid Search Leads Index (Web)</h3><canvas id="sale-chart"></canvas></div>
-  </div>
+  <div class="section-title">Leads / Transactions Index (<span class="tip" data-tip="The average daily value over the 4 weeks before the conflict (Jan 31 to Feb 27, 2026). A value of 80 means 20% below that average. Source: GA4 (web).">Baseline = 100</span>)</div>
+  <div class="chart-grid"><div class="chart-box full-width"><h3>Daily Leads Index by Channel (Web)</h3><canvas id="leads-chart"></canvas></div></div>
 </div>
 <div class="section">
   <div class="section-title">Ad Spend by Channel</div>
@@ -617,8 +614,11 @@ function renderSessions(){
 }
 function renderLeads(){
   const d=filt(),l=d.map(r=>r.date);
-  mk('rent-chart',{type:'line',data:{labels:l,datasets:[lds('Organic Leads',d.map(r=>r.organic_transactions_idx),'#6ee7b7'),{label:'Baseline',data:d.map(()=>100),borderColor:'rgba(255,255,255,0.2)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}]},options:{responsive:true,scales:{x:tx(),y:yx('Index',0)},plugins:{annotation:ca()}}});
-  mk('sale-chart',{type:'line',data:{labels:l,datasets:[lds('Paid Leads',d.map(r=>r.paid_transactions_idx),PF.sky),{label:'Baseline',data:d.map(()=>100),borderColor:'rgba(255,255,255,0.2)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}]},options:{responsive:true,scales:{x:tx(),y:yx('Index',0)},plugins:{annotation:ca()}}});
+  mk('leads-chart',{type:'line',data:{labels:l,datasets:[
+    lds('Organic Search',d.map(r=>r.organic_transactions_idx),'#6ee7b7'),
+    lds('Paid Search',d.map(r=>r.paid_transactions_idx),PF.sky),
+    {label:'Baseline (100)',data:d.map(()=>100),borderColor:'rgba(255,255,255,0.25)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,scales:{x:tx(),y:yx('Index',0)},plugins:{annotation:ca(),legend:{labels:{color:'#B7B1DD',boxWidth:12}}}}});
 }
 function renderSpend(){
   const d=filt(),l=d.map(r=>r.date);
