@@ -58,6 +58,11 @@ header h1 span{color:var(--pf-clay);}
 .sig-status{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-top:6px;}
 .sig-status.met{background:rgba(110,231,183,.15);color:var(--green);}
 .sig-status.not-met{background:rgba(234,57,52,.15);color:var(--pf-clay);}
+.sig-dod{font-size:11px;margin-top:3px;margin-bottom:2px;}
+.dod-badge{font-weight:700;font-size:11px;}
+.dod-up{color:var(--green);}
+.dod-down{color:var(--pf-clay);}
+.dod-flat{color:var(--muted);}
 .overall-status{text-align:center;padding:12px;border-radius:8px;font-weight:600;font-size:14px;margin-bottom:16px;}
 .overall-status.red-light{background:rgba(234,57,52,.12);color:var(--pf-clay);border:1px solid rgba(234,57,52,.3);}
 .overall-status.green-light{background:rgba(110,231,183,.12);color:var(--green);border:1px solid rgba(110,231,183,.3);}
@@ -515,6 +520,12 @@ function renderReactivation(){
   const latBuySOV=sov(latRec,'core_buy'),prevBuySOV=sov(prevRec,'core_buy');
   const latRentSOV=sov(latRec,'core_rent'),prevRentSOV=sov(prevRec,'core_rent');
   const coreBuyOK=latBuySOV>50;const coreRentOK=latRentSOV>50;const shareOK=coreBuyOK&&coreRentOK;
+  const sessDod=latest.wow_sessions-prev.wow_sessions;
+  const orgDod=latest.wow_org_leads-prev.wow_org_leads;
+  const paidDod=latest.wow_paid_leads-prev.wow_paid_leads;
+  const buyDod=latBuySOV-prevBuySOV;
+  const rentDod=latRentSOV-prevRentSOV;
+  function dod(d){if(Math.abs(d)<0.05)return'<span class="dod-badge dod-flat">→ flat</span>';const arr=d>0?'▲':'▼';const cls=d>0?'dod-up':'dod-down';const s=d>=0?'+':'';return'<span class="dod-badge '+cls+'">'+arr+' '+s+d.toFixed(1)+'pp</span>';}
   const met=[sessOK,leadsOK,shareOK].filter(Boolean).length;
   const green=met>=2;
 
@@ -528,6 +539,7 @@ function renderReactivation(){
       <div class="signal-card ${sessOK?'green':'red'}">
         <div class="sig-label">Signal 1: Sessions Recovery</div>
         <div class="sig-value"><span style="color:${latest.wow_sessions>=10?'var(--green)':latest.wow_sessions>=0?'var(--pf-sand)':'var(--pf-clay)'}">${latest.wow_sessions>=0?'+':''}${latest.wow_sessions.toFixed(1)}%</span></div>
+        <div class="sig-dod">vs prior day: ${dod(sessDod)}</div>
         <div class="sig-threshold">Threshold: +10% <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. A positive value means the trend is accelerating; negative means decelerating.">week-over-week</span> for 2 consecutive days</div>
         <div class="sig-explain">Measures total user demand combining organic search (web, via GA4), paid search (web, via GA4), and app sessions (group-level, via Kochava) on a 7-day rolling average vs the prior week. Tells us whether people are coming back to search for properties.</div>
         <div class="sig-status ${sessOK?'met':'not-met'}">${sessOK?'MET':'NOT MET'}</div>
@@ -535,6 +547,7 @@ function renderReactivation(){
       <div class="signal-card ${leadsOK?'green':'red'}">
         <div class="sig-label">Signal 2: Leads Recovery</div>
         <div class="sig-value">Organic: <span style="color:${latest.wow_org_leads>=8?'var(--green)':latest.wow_org_leads>=0?'var(--pf-sand)':'var(--pf-clay)'}">${latest.wow_org_leads>=0?'+':''}${latest.wow_org_leads.toFixed(1)}%</span> | Paid: <span style="color:${latest.wow_paid_leads>=8?'var(--green)':latest.wow_paid_leads>=0?'var(--pf-sand)':'var(--pf-clay)'}">${latest.wow_paid_leads>=0?'+':''}${latest.wow_paid_leads.toFixed(1)}%</span></div>
+        <div class="sig-dod">vs prior day — Org: ${dod(orgDod)} | Paid: ${dod(paidDod)}</div>
         <div class="sig-threshold">Threshold: +8% <span class="tip" data-tip="Compares the 7-day rolling average to the same rolling average one week prior. A positive value means the trend is accelerating; negative means decelerating.">week-over-week</span> for 2 consecutive days (organic or paid)</div>
         <div class="sig-explain">Measures downstream intent quality (lead submissions on property listings, via GA4). If sessions recover but leads don't follow, scaling spend would buy traffic without conversions. Tracked separately for organic search (web) and paid search (web) to identify which channel is recovering first.</div>
         <div class="sig-status ${leadsOK?'met':'not-met'}">${leadsOK?'MET':'NOT MET'}</div>
@@ -542,6 +555,7 @@ function renderReactivation(){
       <div class="signal-card ${shareOK?'green':'red'}">
         <div class="sig-label">Signal 3: <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">Paid Search Share of Voice</span> vs Bayut</div>
         <div class="sig-value">Rent: <span style="color:${latRentSOV>50?'var(--green)':'var(--pf-clay)'}">${latRentSOV.toFixed(1)}%</span> | Buy: <span style="color:${latBuySOV>50?'var(--green)':'var(--pf-clay)'}">${latBuySOV.toFixed(1)}%</span></div>
+        <div class="sig-dod">vs prior day — Rent: ${dod(rentDod)} | Buy: ${dod(buyDod)}</div>
         <div class="sig-threshold">Threshold: PF <span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">paid search share of voice</span> &gt;50% on both <span class="tip" data-tip="Non-branded, location-free rental keywords with above-average search volume. Examples: &quot;apartment for rent&quot;, &quot;villa for rent&quot;, &quot;studio for rent&quot;.">Core Rent</span> AND <span class="tip" data-tip="Non-branded, location-free purchase keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;villa for sale&quot;, &quot;townhouse for sale&quot;.">Core Buy</span> for 2 consecutive days</div>
         <div class="sig-explain"><span class="tip" data-tip="Impression share x absolute top-of-page rate, normalized PF vs Bayut. Measures who is appearing in the #1 ad position more often on Google Search. Source: Google Ads auction insights.">Paid search share of voice</span> = <span class="tip" data-tip="The percentage of times a PropertyFinder paid search ad appeared out of all the times it was eligible to appear on Google Search. Source: Google Ads auction insights.">impression share</span> x <span class="tip" data-tip="The percentage of PropertyFinder ad impressions that appeared in the #1 position, above all other ads and organic results on Google Search. Source: Google Ads auction insights.">absolute top-of-page rate</span>, normalized against Bayut. This weights both how often our ads appear and how often they appear in the #1 position. Above 50% means PF is appearing in the top position more frequently than Bayut on <span class="tip" data-tip="Non-branded, location-free keywords with above-average search volume. Examples: &quot;apartment for sale&quot;, &quot;apartment for rent&quot;, &quot;villa for sale&quot;.">core keywords</span>.</div>
         <div class="sig-status ${shareOK?'met':'not-met'}">${shareOK?'MET':'NOT MET'}</div>
@@ -768,7 +782,14 @@ function renderReactivationQA() {
   const sessOK=wowSess>=10&&prevSess>=10;
   const leadsOK=(wowPaidL>=8&&prevPaidL>=8)||(wowOrgL>=8&&prevOrgL>=8);
   function sovPct(cat){const ps=(latest['pf_'+cat+'_share']||0)/100*(latest['pf_'+cat+'_top']||0)/100;const cs=(latest['comp_'+cat+'_share']||0)/100*(latest['comp_'+cat+'_top']||0)/100;return(ps+cs)>0?ps/(ps+cs)*100:null;}
+  function sovRec(r,cat){const ps=(r['pf_'+cat+'_share']||0)/100*(r['pf_'+cat+'_top']||0)/100;const cs=(r['comp_'+cat+'_share']||0)/100*(r['comp_'+cat+'_top']||0)/100;return(ps+cs)>0?ps/(ps+cs)*100:null;}
   const sovBuy=sovPct('core_buy'),sovRent=sovPct('core_rent');
+  const prevBuySOV=prev?sovRec(prev,'core_buy'):null;
+  const prevRentSOV=prev?sovRec(prev,'core_rent'):null;
+  const sessDod=wowSess-prevSess, orgDod=wowOrgL-prevOrgL, paidDod=wowPaidL-prevPaidL;
+  const buyDod=sovBuy!=null&&prevBuySOV!=null?sovBuy-prevBuySOV:null;
+  const rentDod=sovRent!=null&&prevRentSOV!=null?sovRent-prevRentSOV:null;
+  function dod(d){if(d==null||Math.abs(d)<0.05)return'<span class="dod-badge dod-flat">→ flat</span>';const arr=d>0?'▲':'▼';const cls=d>0?'dod-up':'dod-down';const s=d>=0?'+':'';return'<span class="dod-badge '+cls+'">'+arr+' '+s+d.toFixed(1)+'pp</span>';}
   const shareOK=sovBuy!=null&&sovRent!=null&&sovBuy>50&&sovRent>50;
   const cCls=ok=>ok?'green':'amber';
   const stEl=ok=>ok?'<div class="sig-status met">MET</div>':'<div class="sig-status not-met">NOT MET</div>';
@@ -779,6 +800,7 @@ function renderReactivationQA() {
       <div class="signal-card ${cCls(sessOK)}">
         <div class="sig-label">Signal 1: Sessions Recovery</div>
         <div class="sig-value"><span style="color:${sessOK?'var(--green)':'var(--pf-clay)'}">${fmtWoW(wowSess)}</span></div>
+        <div class="sig-dod">vs prior day: ${dod(sessDod)}</div>
         <div class="sig-threshold">Threshold: +10% WoW for 2 consecutive days</div>
         <div class="sig-explain">Latest: ${latest.date} = ${fmtWoW(wowSess)}${prev?', prior = '+fmtWoW(prevSess):''}.</div>
         ${stEl(sessOK)}
@@ -786,6 +808,7 @@ function renderReactivationQA() {
       <div class="signal-card ${cCls(leadsOK)}">
         <div class="sig-label">Signal 2: Leads Recovery</div>
         <div class="sig-value">Organic: <span style="color:${wowOrgL>=8?'var(--green)':'var(--pf-clay)'}">${fmtWoW(wowOrgL)}</span> | Paid: <span style="color:${wowPaidL>=8?'var(--green)':'var(--pf-clay)'}">${fmtWoW(wowPaidL)}</span></div>
+        <div class="sig-dod">vs prior day — Org: ${dod(orgDod)} | Paid: ${dod(paidDod)}</div>
         <div class="sig-threshold">Threshold: +8% WoW for 2 consecutive days (organic or paid)</div>
         <div class="sig-explain">${leadsOK?'Signal 2 MET.':'Below threshold for 2 consecutive days.'}</div>
         ${stEl(leadsOK)}
@@ -793,6 +816,7 @@ function renderReactivationQA() {
       <div class="signal-card ${cCls(shareOK)}">
         <div class="sig-label">Signal 3: Paid Search SOV vs QatarLiving.com <span class="agg-note">Latest Day</span></div>
         <div class="sig-value">Rent: <span style="color:${sovRent!=null&&sovRent>50?'var(--green)':'var(--pf-clay)'}">${sovRent!=null?sovRent.toFixed(1)+'%':'N/A'}</span> | Buy: <span style="color:${sovBuy!=null&&sovBuy>50?'var(--green)':'var(--pf-clay)'}">${sovBuy!=null?sovBuy.toFixed(1)+'%':'N/A'}</span></div>
+        <div class="sig-dod">vs prior day — Rent: ${dod(rentDod)} | Buy: ${dod(buyDod)}</div>
         <div class="sig-threshold">Threshold: PF SOV &gt;50% on both core buy and core rent</div>
         <div class="sig-explain">SOV = IS% × AbsTop% ÷ (PF+Comp). Latest: ${latest.date}.</div>
         ${stEl(shareOK)}
@@ -921,7 +945,14 @@ function renderReactivationBH() {
   const sessOK=wowSess>=10&&prevSess>=10;
   const leadsOK=(wowPaidL>=8&&prevPaidL>=8)||(wowOrgL>=8&&prevOrgL>=8);
   function sovPct(cat){const ps=(latest['pf_'+cat+'_share']||0)/100*(latest['pf_'+cat+'_top']||0)/100;const cs=(latest['comp_'+cat+'_share']||0)/100*(latest['comp_'+cat+'_top']||0)/100;return(ps+cs)>0?ps/(ps+cs)*100:null;}
+  function sovRec(r,cat){const ps=(r['pf_'+cat+'_share']||0)/100*(r['pf_'+cat+'_top']||0)/100;const cs=(r['comp_'+cat+'_share']||0)/100*(r['comp_'+cat+'_top']||0)/100;return(ps+cs)>0?ps/(ps+cs)*100:null;}
   const sovBuy=sovPct('core_buy'),sovRent=sovPct('core_rent');
+  const prevBuySOV=prev?sovRec(prev,'core_buy'):null;
+  const prevRentSOV=prev?sovRec(prev,'core_rent'):null;
+  const sessDod=wowSess-prevSess, orgDod=wowOrgL-prevOrgL, paidDod=wowPaidL-prevPaidL;
+  const buyDod=sovBuy!=null&&prevBuySOV!=null?sovBuy-prevBuySOV:null;
+  const rentDod=sovRent!=null&&prevRentSOV!=null?sovRent-prevRentSOV:null;
+  function dod(d){if(d==null||Math.abs(d)<0.05)return'<span class="dod-badge dod-flat">→ flat</span>';const arr=d>0?'▲':'▼';const cls=d>0?'dod-up':'dod-down';const s=d>=0?'+':'';return'<span class="dod-badge '+cls+'">'+arr+' '+s+d.toFixed(1)+'pp</span>';}
   const shareOK=sovBuy!=null&&sovRent!=null&&sovBuy>50&&sovRent>50;
   const cCls=ok=>ok?'green':'amber';
   const stEl=ok=>ok?'<div class="sig-status met">MET</div>':'<div class="sig-status not-met">NOT MET</div>';
@@ -932,6 +963,7 @@ function renderReactivationBH() {
       <div class="signal-card ${cCls(sessOK)}">
         <div class="sig-label">Signal 1: Sessions Recovery</div>
         <div class="sig-value"><span style="color:${sessOK?'var(--green)':'var(--pf-clay)'}">${fmtWoW(wowSess)}</span></div>
+        <div class="sig-dod">vs prior day: ${dod(sessDod)}</div>
         <div class="sig-threshold">Threshold: +10% WoW for 2 consecutive days</div>
         <div class="sig-explain">Latest: ${latest.date} = ${fmtWoW(wowSess)}${prev?', prior = '+fmtWoW(prevSess):''}.</div>
         ${stEl(sessOK)}
@@ -939,6 +971,7 @@ function renderReactivationBH() {
       <div class="signal-card ${cCls(leadsOK)}">
         <div class="sig-label">Signal 2: Leads Recovery</div>
         <div class="sig-value">Organic: <span style="color:${wowOrgL>=8?'var(--green)':'var(--pf-clay)'}">${fmtWoW(wowOrgL)}</span> | Paid: <span style="color:${wowPaidL>=8?'var(--green)':'var(--pf-clay)'}">${fmtWoW(wowPaidL)}</span></div>
+        <div class="sig-dod">vs prior day — Org: ${dod(orgDod)} | Paid: ${dod(paidDod)}</div>
         <div class="sig-threshold">Threshold: +8% WoW for 2 consecutive days (organic or paid)</div>
         <div class="sig-explain">${leadsOK?'Signal 2 MET.':'Below threshold for 2 consecutive days.'}</div>
         ${stEl(leadsOK)}
@@ -946,6 +979,7 @@ function renderReactivationBH() {
       <div class="signal-card ${cCls(shareOK)}">
         <div class="sig-label">Signal 3: Paid Search SOV vs OpenSooq.com <span class="agg-note">Latest Day</span></div>
         <div class="sig-value">Rent: <span style="color:${sovRent!=null&&sovRent>50?'var(--green)':'var(--pf-clay)'}">${sovRent!=null?sovRent.toFixed(1)+'%':'N/A'}</span> | Buy: <span style="color:${sovBuy!=null&&sovBuy>50?'var(--green)':'var(--pf-clay)'}">${sovBuy!=null?sovBuy.toFixed(1)+'%':'N/A'}</span></div>
+        <div class="sig-dod">vs prior day — Rent: ${dod(rentDod)} | Buy: ${dod(buyDod)}</div>
         <div class="sig-threshold">Threshold: PF SOV &gt;50% on both core buy and core rent</div>
         <div class="sig-explain">SOV = IS% × AbsTop% ÷ (PF+Comp). Latest: ${latest.date}.</div>
         ${stEl(shareOK)}
