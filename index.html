@@ -591,11 +591,12 @@ function renderKPIs(){
   const post=d.filter(r=>r.date>=CONFLICT);
   const pre=d.filter(r=>r.date>='2026-01-31'&&r.date<CONFLICT);
   const avg=(a,k)=>a.length?a.reduce((s,r)=>s+r[k],0)/a.length:0;
+  const latest=post[post.length-1];
   const kpis=[
-    {label:'Total Sessions Index',value:avg(post,'total_sessions_idx'),f:'idx',d:avg(post,'total_sessions_idx')-100},
-    {label:'Organic Web Index',value:avg(post,'organic_sessions_idx'),f:'idx',d:avg(post,'organic_sessions_idx')-100},
-    {label:'Paid Search Index',value:avg(post,'paid_sessions_idx'),f:'idx',d:avg(post,'paid_sessions_idx')-100},
-    {label:'App Sessions Index (Group)',value:avg(post,'app_sessions_idx'),f:'idx',d:avg(post,'app_sessions_idx')-100},
+    {label:'Total Sessions Index',value:latest.total_sessions_idx||0,f:'idx',d:(latest.total_sessions_idx||0)-100},
+    {label:'Organic Web Index',value:latest.organic_sessions_idx||0,f:'idx',d:(latest.organic_sessions_idx||0)-100},
+    {label:'Paid Search Index',value:latest.paid_sessions_idx||0,f:'idx',d:(latest.paid_sessions_idx||0)-100},
+    {label:'App Sessions Index (Group)',value:latest.app_sessions_idx||0,f:'idx',d:(latest.app_sessions_idx||0)-100},
     {label:'App Transactions/day',value:avg(post,'app_transactions'),f:'n',d:pre.length&&avg(pre,'app_transactions')>0?(avg(post,'app_transactions')/avg(pre,'app_transactions')-1)*100:0},
     {label:'Paid Impressions/day',value:avg(post,'paid_impressions'),f:'n',d:pre.length&&avg(pre,'paid_impressions')>0?(avg(post,'paid_impressions')/avg(pre,'paid_impressions')-1)*100:0},
     {label:'Google Search $/day',value:avg(post,'paid_cost'),f:'$',d:pre.length?(avg(post,'paid_cost')/avg(pre,'paid_cost')-1)*100:0},
@@ -818,9 +819,10 @@ function renderReactivationQA() {
 function renderKpisQA() {
   const post = QA_DATA.filter(r => r.date >= CONFLICT);
   const avg  = (a, k) => a.length ? a.reduce((s,r) => s + (r[k]||0), 0) / a.length : 0;
-  const tot  = avg(post,'total_sessions_idx');
-  const org  = avg(post,'organic_sessions_idx');
-  const paid = avg(post,'paid_sessions_idx');
+  const latest = post[post.length - 1];
+  const tot  = latest.total_sessions_idx || 0;
+  const org  = latest.organic_sessions_idx || 0;
+  const paid = latest.paid_sessions_idx || 0;
   const cost = avg(post,'paid_cost');
   const cls  = v => v>=80?'up':v>=60?'':'down';
   document.getElementById("kpi-row-qa").innerHTML = `
@@ -981,9 +983,10 @@ function renderReactivationBH() {
 function renderKpisBH() {
   const post = BH_DATA.filter(r => r.date >= CONFLICT);
   const avg  = (a, k) => a.length ? a.reduce((s,r) => s + (r[k]||0), 0) / a.length : 0;
-  const tot  = avg(post,'total_sessions_idx');
-  const org  = avg(post,'organic_sessions_idx');
-  const paid = avg(post,'paid_sessions_idx');
+  const latest = post[post.length - 1];
+  const tot  = latest.total_sessions_idx || 0;
+  const org  = latest.organic_sessions_idx || 0;
+  const paid = latest.paid_sessions_idx || 0;
   const cost = avg(post,'paid_cost');
   const cls  = v => v>=80?'up':v>=60?'':'down';
   document.getElementById("kpi-row-bh").innerHTML = `
